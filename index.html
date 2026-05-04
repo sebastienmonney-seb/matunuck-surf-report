@@ -64,14 +64,7 @@
     }
     .surf-scroll { flex: 1; overflow-y: auto; overflow-x: hidden; scrollbar-width: none; }
     .surf-scroll::-webkit-scrollbar { display: none; }
-    .status-bar {
-      height: 44px; padding: 14px 22px 0;
-      display: flex; align-items: flex-start; justify-content: space-between;
-      font-size: 15px; font-weight: 600; font-family: var(--font-sans);
-      flex-shrink: 0; font-variant-numeric: tabular-nums;
-    }
-    .status-bar .right { display: flex; align-items: center; gap: 5px; }
-    .mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
     .muted { color: var(--muted-foreground); }
     .eyebrow {
       font-family: var(--font-mono); font-size: 10px;
@@ -412,35 +405,6 @@
   const { useState, useEffect, useRef } = React;
 
   /* ── Status bar with live clock ── */
-  const StatusBar = () => {
-    const fmt = () => { const n=new Date(),h=n.getHours(),m=n.getMinutes(),h12=h===0?12:h>12?h-12:h; return `${h12}:${String(m).padStart(2,'0')}`; };
-    const [time, setTime] = useState(fmt);
-    useEffect(() => { const id=setInterval(()=>setTime(fmt()),15000); return ()=>clearInterval(id); }, []);
-    return (
-      <div className="status-bar">
-        <span>{time}</span>
-        <div className="right">
-          <svg width="18" height="12" viewBox="0 0 18 12" fill="none">
-            <rect x="0" y="8" width="3" height="4" rx="0.8" fill="currentColor"/>
-            <rect x="5" y="5" width="3" height="7" rx="0.8" fill="currentColor"/>
-            <rect x="10" y="2" width="3" height="10" rx="0.8" fill="currentColor"/>
-            <rect x="15" y="0" width="3" height="12" rx="0.8" fill="currentColor" opacity="0.4"/>
-          </svg>
-          <svg width="16" height="12" viewBox="0 0 16 12" fill="none">
-            <path d="M8 11a1.2 1.2 0 110-2.4 1.2 1.2 0 010 2.4z" fill="currentColor"/>
-            <path d="M3.6 6.9a6 6 0 018.8 0l-1.1 1.1a4.5 4.5 0 00-6.6 0L3.6 6.9z" fill="currentColor"/>
-            <path d="M1.1 4.5a9.4 9.4 0 0113.8 0l-1.1 1.1a7.9 7.9 0 00-11.6 0L1.1 4.5z" fill="currentColor"/>
-          </svg>
-          <svg width="26" height="12" viewBox="0 0 26 12" fill="none">
-            <rect x="0.5" y="0.5" width="22" height="11" rx="2.5" stroke="currentColor" opacity="0.5"/>
-            <rect x="2" y="2" width="18" height="8" rx="1.3" fill="currentColor"/>
-            <rect x="23.5" y="4" width="1.5" height="4" rx="0.7" fill="currentColor" opacity="0.5"/>
-          </svg>
-        </div>
-      </div>
-    );
-  };
-
   const LIcon = ({ name, size=16, style={} }) => {
     const ref = useRef();
     useEffect(() => {
@@ -719,7 +683,6 @@
 
     return (
       <div className={`surf-screen${dark?' dark':''}`}>
-        <StatusBar/>
 
         {/* Header */}
         <div style={{padding:"4px 20px 10px",flexShrink:0,display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
