@@ -1,0 +1,861 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+  <title>Matunuck Surf Report — Deep Hole</title>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Geist+Mono:wght@100..900&display=swap");
+    :root {
+      --radius: 0.625rem;
+      --radius-sm: calc(var(--radius) * 0.6);
+      --radius-md: calc(var(--radius) * 0.8);
+      --radius-lg: var(--radius);
+      --radius-xl: calc(var(--radius) * 1.4);
+      --background: oklch(1 0 0);
+      --foreground: oklch(0.145 0 0);
+      --card: oklch(1 0 0);
+      --primary: oklch(0.205 0 0);
+      --primary-foreground: oklch(0.985 0 0);
+      --secondary: oklch(0.97 0 0);
+      --muted: oklch(0.97 0 0);
+      --muted-foreground: oklch(0.556 0 0);
+      --border: oklch(0.922 0 0);
+      --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
+      --font-mono: "Geist Mono", ui-monospace, monospace;
+      --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --rating-poor: oklch(0.62 0.22 27);
+      --rating-fair: oklch(0.70 0.17 60);
+      --rating-good: oklch(0.58 0.16 150);
+      --rating-epic: oklch(0.55 0.22 305);
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0;
+      background: oklch(0.93 0 0);
+      font-family: var(--font-sans);
+      color: var(--foreground);
+      -webkit-font-smoothing: antialiased;
+      min-height: 100dvh;
+      display: flex;
+      justify-content: center;
+      padding: 32px 0 64px;
+    }
+    .surf-screen {
+      width: 390px;
+      background: var(--background);
+      color: var(--foreground);
+      font-family: var(--font-sans);
+      display: flex;
+      flex-direction: column;
+      border-radius: 40px;
+      overflow: hidden;
+      box-shadow: 0 32px 80px rgb(0 0 0 / 0.18), 0 2px 6px rgb(0 0 0 / 0.08);
+    }
+    @media (max-width: 430px) {
+      html, body { background: var(--background); padding: 0; display: block; }
+      .surf-screen { width: 100%; border-radius: 0; box-shadow: none; }
+    }
+    .surf-scroll { flex: 1; overflow-y: auto; overflow-x: hidden; scrollbar-width: none; }
+    .surf-scroll::-webkit-scrollbar { display: none; }
+    .status-bar {
+      height: 44px; padding: 14px 22px 0;
+      display: flex; align-items: flex-start; justify-content: space-between;
+      font-size: 15px; font-weight: 600; font-family: var(--font-sans);
+      flex-shrink: 0; font-variant-numeric: tabular-nums;
+    }
+    .status-bar .right { display: flex; align-items: center; gap: 5px; }
+    .mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+    .muted { color: var(--muted-foreground); }
+    .eyebrow {
+      font-family: var(--font-mono); font-size: 10px;
+      letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted-foreground);
+    }
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius-xl); box-shadow: var(--shadow-xs);
+    }
+    .hero-num {
+      font-family: var(--font-sans); font-weight: 600;
+      letter-spacing: -0.03em; font-variant-numeric: tabular-nums; line-height: 1;
+    }
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px;
+      border-radius: 999px; font-size: 11px; font-weight: 500;
+      line-height: 1.4; border: 1px solid transparent;
+    }
+    .badge-outline { background: transparent; border-color: var(--border); color: var(--foreground); }
+    .live-dot {
+      width: 7px; height: 7px; border-radius: 999px;
+      background: oklch(0.65 0.18 145);
+      animation: live-pulse 2s ease-in-out infinite;
+      display: inline-block; flex-shrink: 0;
+    }
+    @keyframes live-pulse {
+      0%   { box-shadow: 0 0 0 0   oklch(0.65 0.18 145 / 0.55); transform: scale(1); }
+      50%  { box-shadow: 0 0 0 5px oklch(0.65 0.18 145 / 0);    transform: scale(1.05); }
+      100% { box-shadow: 0 0 0 0   oklch(0.65 0.18 145 / 0);    transform: scale(1); }
+    }
+    .rating-pill {
+      display: inline-flex; align-items: center; padding: 3px 10px;
+      border-radius: 999px; font-size: 12px; font-weight: 600; letter-spacing: -0.005em;
+    }
+    .rating-poor { background: var(--rating-poor); color: #fff; border: 1px solid var(--rating-poor); }
+    .rating-fair { background: var(--rating-fair); color: #fff; border: 1px solid var(--rating-fair); }
+    .rating-good { background: var(--rating-good); color: #fff; border: 1px solid var(--rating-good); }
+    .rating-epic { background: var(--rating-epic); color: #fff; border: 1px solid var(--rating-epic); }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- ── Utilities + data loading ── -->
+  <script>
+  window.SurfUtil = {
+    compass(deg) {
+      const d = ["N","NNE","NE","ENE","E","ESE","SE","SSE","S","SSW","SW","WSW","W","WNW","NW","NNW"];
+      return d[Math.round(((deg % 360) / 22.5)) % 16];
+    }
+  };
+
+  function fmtTime12(h, m) {
+    const ap = h < 12 ? 'AM' : 'PM';
+    const h12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
+    return `${h12}:${String(m).padStart(2,'0')} ${ap}`;
+  }
+
+  // Cosine interpolation between high/low tide events → smooth 24-element array
+  function buildTideCurve(events) {
+    if (!events || events.length < 2) return null;
+    const pts = events.map(e => {
+      const [ts,ap] = e.time.split(' ');
+      const [h,m] = ts.split(':').map(Number);
+      const h24 = (ap==='PM'&&h!==12)?h+12:(ap==='AM'&&h===12?0:h);
+      return { hr: h24 + m/60, ft: e.heightFt };
+    }).sort((a,b) => a.hr - b.hr);
+    // Pad with ±24h wrap-around for smooth edges
+    const ext = [
+      ...pts.map(p => ({hr:p.hr-24, ft:p.ft})),
+      ...pts,
+      ...pts.map(p => ({hr:p.hr+24, ft:p.ft})),
+    ];
+    const curve = new Array(24);
+    for (let h = 0; h < 24; h++) {
+      const hm = h + 0.5;
+      let before = null, after = null;
+      for (let i = ext.length-1; i >= 0; i--) { if (ext[i].hr <= hm) { before = ext[i]; break; } }
+      for (let i = 0; i < ext.length; i++)    { if (ext[i].hr >  hm) { after  = ext[i]; break; } }
+      if (!before || !after) { curve[h] = pts[0].ft; continue; }
+      const t = (hm - before.hr) / (after.hr - before.hr);
+      const c = (1 - Math.cos(t * Math.PI)) / 2;
+      curve[h] = Math.round((before.ft + (after.ft - before.ft)*c)*100)/100;
+    }
+    return curve;
+  }
+
+  // Deep Hole faces ~S (170°). Offshore = N quadrant (315–360, 0–45).
+  function computeRating(waveFt, periodS, windMph, windDirDeg) {
+    if (waveFt < 0.5) return 'Poor';
+    let s = 0;
+    if (waveFt >= 2 && waveFt < 5) s += 3;
+    else if ((waveFt >= 1 && waveFt < 2) || (waveFt >= 5 && waveFt < 7)) s += 2;
+    else s += 1;
+    if (periodS >= 12) s += 2; else if (periodS >= 10) s += 1;
+    const off = windDirDeg >= 315 || windDirDeg <= 45;
+    const on  = windDirDeg >= 135 && windDirDeg <= 225;
+    if (off && windMph < 15) s += 2;
+    else if (off) s += 1;
+    else if (on && windMph > 20) s -= 2;
+    else if (on) s -= 1;
+    if (s >= 6) return 'Epic';
+    if (s >= 4) return 'Good';
+    if (s >= 2) return 'Fair';
+    return 'Poor';
+  }
+
+  // Kept as fallback if any critical API fails
+  window.MOCK_DATA = {
+    nowIdx: 1,
+    hourlyTides: Array.from({length:24}, (_,h) =>
+      Math.round((1.7 + 1.45 * Math.sin((h-8)*Math.PI/6))*10)/10),
+    now: {
+      rating:"Good", waveMax:3.1, waveMin:2.5, period:11,
+      waveDirection:"SSE", waveDirDeg:160,
+      wind:{speed:4,gust:7,dirDeg:15,dirLabel:"NNE",quality:"Offshore"},
+      waterTempF:48, airTempF:52, sunrise:"5:58 AM", sunset:"7:34 PM",
+    },
+    swells:[
+      {label:"Primary",  heightFt:3.1,periodS:11,dirDeg:160,dirLabel:"SSE",energy:78},
+      {label:"Secondary",heightFt:1.4,periodS:8, dirDeg:135,dirLabel:"SE", energy:22},
+    ],
+    hourly:[
+      {t:"5a", hr:5, waveFt:2.9,periodS:11,windMph:3, gustMph:5, windDirDeg:10, tideFt:1.3,rating:"Good"},
+      {t:"6a", hr:6, waveFt:3.1,periodS:11,windMph:4, gustMph:7, windDirDeg:15, tideFt:1.8,rating:"Good"},
+      {t:"7a", hr:7, waveFt:3.2,periodS:11,windMph:5, gustMph:8, windDirDeg:20, tideFt:2.5,rating:"Good"},
+      {t:"8a", hr:8, waveFt:3.3,periodS:11,windMph:6, gustMph:10,windDirDeg:30, tideFt:3.1,rating:"Epic"},
+      {t:"9a", hr:9, waveFt:3.4,periodS:10,windMph:8, gustMph:12,windDirDeg:60, tideFt:3.0,rating:"Good"},
+      {t:"10a",hr:10,waveFt:3.2,periodS:10,windMph:10,gustMph:14,windDirDeg:110,tideFt:2.6,rating:"Good"},
+      {t:"11a",hr:11,waveFt:3.0,periodS:10,windMph:12,gustMph:16,windDirDeg:150,tideFt:2.0,rating:"Fair"},
+      {t:"12p",hr:12,waveFt:2.8,periodS:9, windMph:14,gustMph:18,windDirDeg:180,tideFt:1.3,rating:"Fair"},
+      {t:"1p", hr:13,waveFt:2.6,periodS:9, windMph:15,gustMph:20,windDirDeg:200,tideFt:0.8,rating:"Fair"},
+      {t:"2p", hr:14,waveFt:2.5,periodS:9, windMph:16,gustMph:22,windDirDeg:210,tideFt:0.5,rating:"Poor"},
+      {t:"3p", hr:15,waveFt:2.4,periodS:9, windMph:17,gustMph:23,windDirDeg:215,tideFt:0.7,rating:"Poor"},
+      {t:"4p", hr:16,waveFt:2.3,periodS:9, windMph:15,gustMph:20,windDirDeg:220,tideFt:1.2,rating:"Poor"},
+      {t:"5p", hr:17,waveFt:2.3,periodS:9, windMph:12,gustMph:16,windDirDeg:230,tideFt:1.9,rating:"Fair"},
+      {t:"6p", hr:18,waveFt:2.2,periodS:9, windMph:9, gustMph:12,windDirDeg:250,tideFt:2.6,rating:"Fair"},
+      {t:"7p", hr:19,waveFt:2.2,periodS:9, windMph:6, gustMph:9, windDirDeg:280,tideFt:3.0,rating:"Good"},
+      {t:"8p", hr:20,waveFt:2.1,periodS:9, windMph:4, gustMph:6, windDirDeg:320,tideFt:3.0,rating:"Good"},
+    ],
+    tideEvents:[
+      {time:"2:04 AM",label:"Low", heightFt:0.3},
+      {time:"8:12 AM",label:"High",heightFt:3.2},
+      {time:"2:28 PM",label:"Low", heightFt:0.4},
+      {time:"8:42 PM",label:"High",heightFt:3.0},
+    ],
+    daily:[
+      {day:"Tue",date:"Apr 22",waveMin:2.5,waveMax:3.5,periodS:11,windMph:8, windDirDeg:30, rating:"Good"},
+      {day:"Wed",date:"Apr 23",waveMin:3.0,waveMax:4.0,periodS:12,windMph:6, windDirDeg:10, rating:"Epic"},
+      {day:"Thu",date:"Apr 24",waveMin:2.0,waveMax:3.0,periodS:10,windMph:12,windDirDeg:200,rating:"Fair"},
+      {day:"Fri",date:"Apr 25",waveMin:1.0,waveMax:2.0,periodS:8, windMph:18,windDirDeg:220,rating:"Poor"},
+      {day:"Sat",date:"Apr 26",waveMin:1.5,waveMax:2.5,periodS:9, windMph:10,windDirDeg:20, rating:"Fair"},
+      {day:"Sun",date:"Apr 27",waveMin:2.5,waveMax:3.5,periodS:11,windMph:7, windDirDeg:350,rating:"Good"},
+      {day:"Mon",date:"Apr 28",waveMin:3.0,waveMax:4.5,periodS:12,windMph:5, windDirDeg:20, rating:"Epic"},
+    ],
+    buoys:[
+      {id:"44097",name:"Block Island",distanceMi:12,waveFt:4.3,periodS:11,waveDirDeg:165,updated:"--"},
+      {id:"BUZM3",name:"Buzzards Bay", distanceMi:38,waveFt:3.1,periodS:10,waveDirDeg:175,updated:"--"},
+    ],
+  };
+
+  async function loadSurfData() {
+    const LAT = 41.373, LON = -71.520;
+    const now = new Date();
+    const yr = now.getFullYear();
+    const mo = String(now.getMonth()+1).padStart(2,'0');
+    const dy = String(now.getDate()).padStart(2,'0');
+    const todayCompact = `${yr}${mo}${dy}`;
+    const todayISO    = `${yr}-${mo}-${dy}`;
+    const nowHour = now.getHours();
+    const NB = 'https://api.tidesandcurrents.noaa.gov/api/prod/datagetter';
+    const NP = 'datum=MLLW&station=8454049&time_zone=lst/ldt&units=english&application=matunuck&format=json';
+
+    const safeJSON = async r => { try { return await r.json(); } catch { return null; } };
+
+    const [mRes, fRes, hiloRes, hrlyRes, wtRes] = await Promise.allSettled([
+      fetch(`https://marine-api.open-meteo.com/v1/marine?latitude=${LAT}&longitude=${LON}&hourly=wave_height,wave_period,wave_direction,swell_wave_height,swell_wave_period,swell_wave_direction,wind_wave_height,wind_wave_period,wind_wave_direction,sea_surface_temperature&daily=wave_height_max,wave_period_max,wave_direction_dominant&length_unit=imperial&timezone=America%2FNew_York&forecast_days=7`),
+      fetch(`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&hourly=wind_speed_10m,wind_gusts_10m,wind_direction_10m,temperature_2m&daily=sunrise,sunset,wind_speed_10m_max,wind_direction_10m_dominant&wind_speed_unit=mph&temperature_unit=fahrenheit&timezone=America%2FNew_York&forecast_days=7`),
+      fetch(`${NB}?product=predictions&begin_date=${todayCompact}&range=48&interval=hilo&${NP}`),
+      fetch(`${NB}?product=predictions&begin_date=${todayCompact}&range=24&interval=h&${NP}`),
+      fetch(`${NB}?product=water_temperature&date=latest&station=8454049&time_zone=lst/ldt&units=english&application=matunuck&format=json`),
+    ]);
+
+    const get = r => r.status === 'fulfilled' ? safeJSON(r.value) : Promise.resolve(null);
+    const [marine, forecast, hiloData, hrlyTideData, wtData] = await Promise.all(
+      [mRes, fRes, hiloRes, hrlyRes, wtRes].map(get)
+    );
+
+    if (!marine?.hourly || !forecast?.hourly) throw new Error('Wave/wind APIs unavailable');
+
+    const mh = marine.hourly, fh = forecast.hourly;
+    const md = marine.daily,  fd = forecast.daily;
+
+    // ── Tide events (today's H/L) ──
+    const tideEvents = hiloData?.predictions
+      ? hiloData.predictions
+          .filter(p => p.t.startsWith(todayISO))
+          .slice(0, 4)
+          .map(p => {
+            const [,tp] = p.t.split(' ');
+            const [h,m] = tp.split(':').map(Number);
+            return { time: fmtTime12(h,m), label: p.type==='H'?'High':'Low', heightFt: +parseFloat(p.v).toFixed(1) };
+          })
+      : window.MOCK_DATA.tideEvents;
+
+    // ── Hourly tide heights array [0..23] — cosine baseline from hilo events ──
+    const cosineCurve = buildTideCurve(tideEvents);
+    const hourlyTides = cosineCurve
+      ? [...cosineCurve]
+      : Array.from({length:24}, (_,h) => Math.round((1.7+1.45*Math.sin((h-8)*Math.PI/6))*10)/10);
+    // Override individual hours with NOAA actual predictions when available
+    if (hrlyTideData?.predictions) {
+      hrlyTideData.predictions.forEach(p => {
+        const h = parseInt(p.t.split(' ')[1]);
+        if (h >= 0 && h < 24) hourlyTides[h] = +parseFloat(p.v).toFixed(2);
+      });
+    }
+
+    // ── Water temp — NOAA first, Open-Meteo SST fallback ──
+    const sstC = mh.sea_surface_temperature?.[nowHour];
+    const waterTempF = wtData?.data?.[0]?.v
+      ? Math.round(parseFloat(wtData.data[0].v)*10)/10
+      : (sstC != null ? Math.round((sstC * 9/5 + 32)*10)/10 : null);
+
+    // ── Hourly scrubber array (5 am – 8 pm) ──
+    const HS = 5, HE = 20;
+    const hourly = [];
+    for (let h = HS; h <= HE; h++) {
+      const waveFt  = Math.round((mh.wave_height[h]||0)*10)/10;
+      const periodS = Math.round(mh.wave_period[h]||0);
+      const windMph = Math.round(fh.wind_speed_10m[h]||0);
+      const gustMph = Math.round(fh.wind_gusts_10m[h]||0);
+      const windDirDeg  = Math.round(fh.wind_direction_10m[h]||0);
+      const swellDirDeg = Math.round(mh.swell_wave_direction[h]||0);
+      const t = h===12?'12p':h>12?`${h-12}p`:`${h}a`;
+      hourly.push({ t, hr:h, waveFt, periodS, windMph, gustMph, windDirDeg, swellDirDeg,
+        tideFt: Math.round((hourlyTides[h]||0)*10)/10,
+        rating: computeRating(waveFt, periodS, windMph, windDirDeg) });
+    }
+    const nowIdx = Math.max(0, Math.min(HE-HS, nowHour-HS));
+    const cur = hourly[nowIdx];
+
+    // ── Swells ──
+    const swH = mh.swell_wave_height[nowHour]||0;
+    const wvH = mh.wind_wave_height[nowHour]||0;
+    const tot = swH + wvH || 1;
+    let swells = [
+      { label:'Primary',   heightFt:Math.round(swH*10)/10, periodS:Math.round(mh.swell_wave_period[nowHour]||0),
+        dirDeg:Math.round(mh.swell_wave_direction[nowHour]||0),
+        dirLabel:window.SurfUtil.compass(Math.round(mh.swell_wave_direction[nowHour]||0)),
+        energy:Math.round(swH/tot*100) },
+      { label:'Wind swell', heightFt:Math.round(wvH*10)/10, periodS:Math.round(mh.wind_wave_period[nowHour]||0),
+        dirDeg:Math.round(mh.wind_wave_direction[nowHour]||0),
+        dirLabel:window.SurfUtil.compass(Math.round(mh.wind_wave_direction[nowHour]||0)),
+        energy:Math.round(wvH/tot*100) },
+    ].filter(s => s.heightFt > 0);
+    if (!swells.length) swells = window.MOCK_DATA.swells;
+
+    // ── Daily (7 days) ──
+    const DAYS  = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const MONTHS= ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const daily = (md.time||[]).slice(0,7).map((ds,i) => {
+      const d = new Date(ds+'T12:00:00');
+      const waveMax = Math.round((md.wave_height_max[i]||0)*10)/10;
+      const waveMin = Math.round(waveMax*0.65*10)/10;
+      const periodS = Math.round(md.wave_period_max[i]||0);
+      const windMph = Math.round(fd.wind_speed_10m_max[i]||0);
+      const windDirDeg = Math.round(fd.wind_direction_10m_dominant[i]||0);
+      return { day:DAYS[d.getDay()], date:`${MONTHS[d.getMonth()]} ${d.getDate()}`,
+        waveMin, waveMax, periodS, windMph, windDirDeg,
+        rating:computeRating((waveMax+waveMin)/2, periodS, windMph, windDirDeg) };
+    });
+
+    // ── Sunrise / sunset ──
+    const fmtISO = iso => { try { const d=new Date(iso); return fmtTime12(d.getHours(),d.getMinutes()); } catch{return '--';} };
+    const sunrise = fd.sunrise?.[0] ? fmtISO(fd.sunrise[0]) : '--';
+    const sunset  = fd.sunset?.[0]  ? fmtISO(fd.sunset[0])  : '--';
+
+    // ── Now object ──
+    const nowObj = {
+      rating: cur.rating, waveMax: cur.waveFt, waveMin: Math.round(cur.waveFt*0.8*10)/10,
+      period: cur.periodS,
+      waveDirection: window.SurfUtil.compass(Math.round(mh.wave_direction[nowHour]||0)),
+      waveDirDeg: Math.round(mh.wave_direction[nowHour]||0),
+      wind: { speed:cur.windMph, gust:cur.gustMph, dirDeg:cur.windDirDeg,
+              dirLabel:window.SurfUtil.compass(cur.windDirDeg),
+              quality:(cur.windDirDeg>=315||cur.windDirDeg<=45)?'Offshore':'Onshore' },
+      waterTempF: waterTempF ?? '--',
+      airTempF: Math.round(fh.temperature_2m[nowHour]||0),
+      sunrise, sunset,
+    };
+
+    // ── Buoys — Open-Meteo Marine at each buoy coordinate (no CORS issues) ──
+    const buoyConfigs = [
+      { id:'44097', name:'Block Island', distanceMi:12, lat:40.967, lon:-71.127 },
+      { id:'BUZM3', name:'Buzzards Bay', distanceMi:38, lat:41.394, lon:-70.888 },
+    ];
+    let buoys = [];
+    try {
+      const buoyRes = await Promise.allSettled(buoyConfigs.map(b =>
+        fetch(`https://marine-api.open-meteo.com/v1/marine?latitude=${b.lat}&longitude=${b.lon}&hourly=wave_height,wave_period,wave_direction&length_unit=imperial&timezone=America%2FNew_York&forecast_days=1`)
+      ));
+      const buoyDatas = await Promise.all(buoyRes.map(r => r.status==='fulfilled' ? safeJSON(r.value) : null));
+      buoyDatas.forEach((d, i) => {
+        if (d?.hourly) {
+          const cfg = buoyConfigs[i];
+          buoys.push({
+            id: cfg.id, name: cfg.name, distanceMi: cfg.distanceMi,
+            waveFt:    Math.round((d.hourly.wave_height[nowHour]||0)*10)/10,
+            periodS:   Math.round(d.hourly.wave_period[nowHour]||0),
+            waveDirDeg:Math.round(d.hourly.wave_direction[nowHour]||0),
+            updated: 'model',
+          });
+        }
+      });
+    } catch {}
+    if (!buoys.length) buoys = buoyConfigs.map(c=>({...c,waveFt:'--',periodS:'--',waveDirDeg:0,updated:'--'}));
+
+    return { now:nowObj, swells, hourly, hourlyTides, tideEvents, daily, buoys, nowIdx };
+  }
+  </script>
+
+  <!-- ── React components ── -->
+  <script type="text/babel">
+  const { useState, useEffect, useRef } = React;
+
+  /* ── Status bar with live clock ── */
+  const StatusBar = () => {
+    const fmt = () => { const n=new Date(),h=n.getHours(),m=n.getMinutes(),h12=h===0?12:h>12?h-12:h; return `${h12}:${String(m).padStart(2,'0')}`; };
+    const [time, setTime] = useState(fmt);
+    useEffect(() => { const id=setInterval(()=>setTime(fmt()),15000); return ()=>clearInterval(id); }, []);
+    return (
+      <div className="status-bar">
+        <span>{time}</span>
+        <div className="right">
+          <svg width="18" height="12" viewBox="0 0 18 12" fill="none">
+            <rect x="0" y="8" width="3" height="4" rx="0.8" fill="currentColor"/>
+            <rect x="5" y="5" width="3" height="7" rx="0.8" fill="currentColor"/>
+            <rect x="10" y="2" width="3" height="10" rx="0.8" fill="currentColor"/>
+            <rect x="15" y="0" width="3" height="12" rx="0.8" fill="currentColor" opacity="0.4"/>
+          </svg>
+          <svg width="16" height="12" viewBox="0 0 16 12" fill="none">
+            <path d="M8 11a1.2 1.2 0 110-2.4 1.2 1.2 0 010 2.4z" fill="currentColor"/>
+            <path d="M3.6 6.9a6 6 0 018.8 0l-1.1 1.1a4.5 4.5 0 00-6.6 0L3.6 6.9z" fill="currentColor"/>
+            <path d="M1.1 4.5a9.4 9.4 0 0113.8 0l-1.1 1.1a7.9 7.9 0 00-11.6 0L1.1 4.5z" fill="currentColor"/>
+          </svg>
+          <svg width="26" height="12" viewBox="0 0 26 12" fill="none">
+            <rect x="0.5" y="0.5" width="22" height="11" rx="2.5" stroke="currentColor" opacity="0.5"/>
+            <rect x="2" y="2" width="18" height="8" rx="1.3" fill="currentColor"/>
+            <rect x="23.5" y="4" width="1.5" height="4" rx="0.7" fill="currentColor" opacity="0.5"/>
+          </svg>
+        </div>
+      </div>
+    );
+  };
+
+  const LIcon = ({ name, size=16, style={} }) => {
+    const ref = useRef();
+    useEffect(() => {
+      if (ref.current && window.lucide) {
+        ref.current.innerHTML='';
+        const i=document.createElement('i'); i.setAttribute('data-lucide',name);
+        ref.current.appendChild(i); window.lucide.createIcons();
+        const svg=ref.current.querySelector('svg');
+        if(svg){svg.setAttribute('width',size);svg.setAttribute('height',size);}
+      }
+    },[name,size]);
+    return <span ref={ref} style={{display:'inline-flex',alignItems:'center',lineHeight:0,...style}}/>;
+  };
+
+  const RatingPill = ({ rating, size="md" }) => {
+    const cls={Poor:"rating-poor",Fair:"rating-fair",Good:"rating-good",Epic:"rating-epic"}[rating]||"rating-fair";
+    return <span className={`rating-pill ${cls}`} style={{padding:size==="sm"?"2px 8px":"3px 10px",fontSize:size==="sm"?11:12}}>{rating}</span>;
+  };
+
+  const DirArrow = ({ deg, size=20, stroke=1.8, color="var(--foreground)" }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24"
+      style={{transform:`rotate(${deg+180}deg)`,transition:'transform 200ms ease'}}
+      fill="none" stroke={color} strokeWidth={stroke} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 4 L12 20"/><path d="M6 10 L12 4 L18 10"/>
+    </svg>
+  );
+
+  const CompassDial = ({ deg, label, size=56 }) => (
+    <div style={{position:'relative',width:size,height:size}}>
+      <svg width={size} height={size} viewBox="0 0 56 56">
+        <circle cx="28" cy="28" r="26" fill="var(--card)" stroke="var(--border)"/>
+        {["N","E","S","W"].map((c,i)=>{
+          const a=i*90,x=28+Math.sin(a*Math.PI/180)*21.5,y=28-Math.cos(a*Math.PI/180)*21.5+2.5;
+          return <text key={c} x={x} y={y} fontSize="7" textAnchor="middle" fill="var(--muted-foreground)" fontFamily="Geist Mono,monospace">{c}</text>;
+        })}
+        {Array.from({length:16}).map((_,i)=>{
+          const a=i*22.5,r1=i%4===0?17:19;
+          const x1=28+Math.sin(a*Math.PI/180)*r1,y1=28-Math.cos(a*Math.PI/180)*r1;
+          const x2=28+Math.sin(a*Math.PI/180)*21, y2=28-Math.cos(a*Math.PI/180)*21;
+          return <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="var(--border)" strokeWidth="1"/>;
+        })}
+        <g transform={`rotate(${deg+180} 28 28)`}>
+          <path d="M28 10 L24 18 L28 16 L32 18 Z" fill="var(--foreground)"/>
+          <line x1="28" y1="16" x2="28" y2="40" stroke="var(--foreground)" strokeWidth="1.5" strokeLinecap="round"/>
+        </g>
+      </svg>
+      {label&&<div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:600,fontFamily:'var(--font-mono)',pointerEvents:'none'}}>
+        <span style={{background:'var(--card)',padding:'0 3px',marginTop:1}}>{label}</span>
+      </div>}
+    </div>
+  );
+
+  /* ── Scrubber ── */
+  const ScrubberTimeline = ({ hourly, idx, onChange, nowIdx=0 }) => {
+    const W=350,H=130,n=hourly.length,col=W/n;
+    const waveFts = hourly.map(h=>h.waveFt);
+    const dataMax = Math.max(...waveFts), dataMin = Math.min(...waveFts);
+    const span = Math.max(0.5, dataMax - dataMin);
+    const bMax = dataMax + span * 0.08;
+    const bMin = Math.max(0, dataMin - span * 0.18);
+    const svgRef = useRef(null);
+    const rc = r=>({Epic:'var(--rating-epic)',Good:'var(--rating-good)',Fair:'var(--rating-fair)',Poor:'var(--rating-poor)'})[r];
+    const hitTest = cx=>{const rect=svgRef.current.getBoundingClientRect();return Math.max(0,Math.min(n-1,Math.floor((cx-rect.left)/rect.width*n)));};
+    const handleDown = e=>{
+      e.preventDefault();
+      onChange(hitTest(e.touches?e.touches[0].clientX:e.clientX));
+      const mv=ev=>onChange(hitTest(ev.touches?ev.touches[0].clientX:ev.clientX));
+      const up=()=>{window.removeEventListener('mousemove',mv);window.removeEventListener('mouseup',up);window.removeEventListener('touchmove',mv);window.removeEventListener('touchend',up);};
+      window.addEventListener('mousemove',mv);window.addEventListener('mouseup',up);
+      window.addEventListener('touchmove',mv,{passive:false});window.addEventListener('touchend',up);
+    };
+    const ax=idx*col+col/2;
+    return (
+      <div style={{padding:"14px 0 10px",userSelect:'none',background:'var(--card)',border:'1px solid var(--border)',borderRadius:'var(--radius-xl)'}}>
+        <div style={{display:'flex',justifyContent:'space-between',padding:"0 14px 8px",gap:8}}>
+          <div className="eyebrow" style={{whiteSpace:'nowrap'}}>Scrubber</div>
+          <div className="mono" style={{fontSize:10,whiteSpace:'nowrap',display:'flex',alignItems:'center',gap:6}}>
+            <button type="button" onClick={()=>idx!==nowIdx&&onChange(nowIdx)} style={{
+              fontFamily:'inherit',fontSize:10,fontWeight:600,letterSpacing:'0.04em',
+              padding:'2px 7px',borderRadius:4,lineHeight:1,
+              border:'1px solid var(--border)',
+              background:idx!==nowIdx?'var(--background)':'transparent',
+              color:idx!==nowIdx?'var(--foreground)':'var(--muted-foreground)',
+              borderColor:idx!==nowIdx?'var(--border)':'transparent',
+              cursor:idx!==nowIdx?'pointer':'default',
+            }}>NOW</button>
+            <span className="muted">·</span>
+            <span>{hourly[idx].t.toUpperCase()}</span>
+          </div>
+        </div>
+        <svg ref={svgRef} width="100%" viewBox={`0 0 ${W} ${H}`}
+          style={{display:'block',cursor:'ew-resize',touchAction:'none'}}
+          onMouseDown={handleDown} onTouchStart={handleDown}>
+          {[0,0.5,1].map((f,i)=>{const y=14+(H-44)*(1-f);return <line key={i} x1={0} y1={y} x2={W} y2={y} stroke="var(--border)" strokeDasharray="2 3" opacity="0.6"/>;  })}
+          {hourly.map((h,i)=>{
+            const hh=Math.max(2,(h.waveFt-bMin)/(bMax-bMin)*(H-44));
+            const x=i*col+2,y=H-30-hh,w=col-4,active=i===idx;
+            return (
+              <g key={i}>
+                <rect x={x} y={y} width={w} height={hh} rx="1.5" fill={rc(h.rating)} opacity={active?1:0.55}/>
+                {(i%3===0||active)&&<text x={i*col+col/2} y={H-14} fontSize="9" textAnchor="middle"
+                  fill={active?"var(--foreground)":"var(--muted-foreground)"}
+                  fontWeight={active?600:400} fontFamily="Geist Mono,monospace">{h.t}</text>}
+                {active&&<rect x={x} y={H-8} width={w} height="3.5" rx="1" fill={rc(h.rating)}/>}
+              </g>
+            );
+          })}
+          <line x1={ax} y1="4" x2={ax} y2={H-2} stroke="var(--foreground)" strokeWidth="1.2"/>
+          <circle cx={ax} cy="6" r="3.5" fill="var(--foreground)"/>
+          <rect x={ax-22} y="12" width="44" height="16" rx="4" fill="var(--foreground)"/>
+          <text x={ax} y="23" fontSize="10" fontWeight="600" textAnchor="middle"
+            fill="var(--primary-foreground)" fontFamily="Geist Mono,monospace">{hourly[idx].waveFt.toFixed(1)} ft</text>
+        </svg>
+      </div>
+    );
+  };
+
+  const ScrubTile = ({label,value,unit,sub,children}) => (
+    <div className="card" style={{padding:14}}>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
+        <div className="eyebrow">{label}</div>
+        <div style={{color:'var(--foreground)'}}>{children}</div>
+      </div>
+      <div style={{display:'flex',alignItems:'baseline',gap:3,marginTop:6}}>
+        <span className="hero-num" style={{fontSize:26}}>{value}</span>
+        <span className="mono muted" style={{fontSize:10}}>{unit}</span>
+      </div>
+      <div className="mono muted" style={{fontSize:10,marginTop:3}}>{sub}</div>
+    </div>
+  );
+
+  const SwellStack = ({swells}) => (
+    <div style={{display:'flex',flexDirection:'column',gap:12}}>
+      {swells.map((s,i)=>(
+        <div key={s.label}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:5}}>
+            <div style={{display:'flex',alignItems:'center',gap:6}}>
+              <DirArrow deg={s.dirDeg} size={14} stroke={1.6} color={i===0?'var(--foreground)':'var(--muted-foreground)'}/>
+              <span style={{fontSize:12,fontWeight:500}}>{s.label}</span>
+              <span className="mono muted" style={{fontSize:10}}>{s.dirLabel} · {s.dirDeg}°</span>
+            </div>
+            <div className="mono" style={{fontSize:12,fontWeight:500}}>{s.heightFt} ft <span className="muted">@ {s.periodS}s</span></div>
+          </div>
+          <div style={{height:5,background:'var(--muted)',borderRadius:999,overflow:'hidden'}}>
+            <div style={{width:`${s.energy}%`,height:'100%',background:'var(--foreground)',opacity:i===0?1:0.45}}/>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
+  const EnvCell = ({icon,label,value}) => (
+    <div>
+      <div style={{display:'flex',alignItems:'center',gap:4,color:'var(--muted-foreground)'}}>
+        <LIcon name={icon} size={11}/><span className="eyebrow">{label}</span>
+      </div>
+      <div className="mono" style={{fontSize:14,fontWeight:500,marginTop:3}}>{value}</div>
+    </div>
+  );
+
+  /* ── Tide spark — driven by real hourlyTides array ── */
+  const FullTideSpark = ({ hourlyTides, tideEvents, nowHour }) => {
+    const W=320,H=60;
+    const valid = hourlyTides.filter(v=>!isNaN(v)&&v>0);
+    const minT = valid.length ? Math.min(...valid) : 0;
+    const maxT = valid.length ? Math.max(...valid) : 4;
+    const range = maxT - minT || 1;
+    const yFor = ft => H - (ft-minT)/range*(H-8) - 4;
+    const pts = hourlyTides.map((ft,hr)=>({ x: hr/23*(W-4)+2, y: yFor(ft||0) }));
+    const d = pts.map((p,i)=>`${i===0?'M':'L'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ');
+    const nx = Math.min(nowHour,23)/23*(W-4)+2;
+    const ny = yFor(hourlyTides[Math.min(nowHour,23)]||0);
+    const dotPositions = (tideEvents||[]).map(e=>{
+      const [ts,ap]=e.time.split(' ');
+      const [h,m]=ts.split(':').map(Number);
+      const h24=(ap==='PM'&&h!==12)?h+12:(ap==='AM'&&h===12?0:h);
+      const fhr=Math.min(22.99,Math.max(0,h24+m/60));
+      const h0=Math.floor(fhr),h1=Math.min(23,h0+1);
+      const frac=fhr-h0;
+      const ft=hourlyTides[h0]*(1-frac)+(hourlyTides[h1]??hourlyTides[h0])*frac;
+      return { x:fhr/23*(W-4)+2, y:yFor(ft) };
+    });
+    return (
+      <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} style={{marginTop:10,display:'block'}}>
+        <path d={d+` L ${pts[pts.length-1].x.toFixed(1)} ${H} L ${pts[0].x.toFixed(1)} ${H} Z`} fill="var(--muted)" opacity="0.7"/>
+        <path d={d} stroke="var(--foreground)" strokeWidth="1.4" fill="none"/>
+        {dotPositions.map((p,i)=>(
+          <circle key={i} cx={p.x} cy={p.y} r="2.5" fill="var(--card)" stroke="var(--foreground)" strokeWidth="1.2"/>
+        ))}
+        <line x1={nx} y1="2" x2={nx} y2={H-2} stroke="var(--foreground)" strokeWidth="1" strokeDasharray="2 2"/>
+        <circle cx={nx} cy={ny} r="3.5" fill="var(--foreground)"/>
+      </svg>
+    );
+  };
+
+  const DayHourRibbon = ({day}) => {
+    const HOURS=13,peakHour=13;
+    const min=day.waveMin,max=day.waveMax,mid=(min+max)/2,amp=(max-min)/2;
+    const seed=day.day.charCodeAt(0)+day.day.charCodeAt(1);
+    const nudge=i=>((seed*9301+i*49297)%233280/233280-0.5)*(amp*0.35);
+    const RATINGS=['Poor','Fair','Good','Epic'];
+    const baseIdx=RATINGS.indexOf(day.rating);
+    const ratingForHour=h=>{const dist=Math.abs(h+6-peakHour);return RATINGS[Math.max(0,Math.min(3,baseIdx-Math.floor(dist/4)))];};
+    const colorFor=r=>({Poor:'var(--rating-poor)',Fair:'var(--rating-fair)',Good:'var(--rating-good)',Epic:'var(--rating-epic)'})[r];
+    const CEIL=5,BA=26;
+    return (
+      <div style={{display:'flex',flexDirection:'column',gap:3}}>
+        <div style={{display:'grid',gridTemplateColumns:`repeat(${HOURS},1fr)`,gap:2,alignItems:'flex-end',height:BA}}>
+          {Array.from({length:HOURS}).map((_,i)=>{
+            const t=i/(HOURS-1)*Math.PI,arc=Math.sin(t);
+            const ft=Math.max(0.4,Math.min(CEIL,mid+(arc*2-1)*amp+nudge(i)));
+            return <div key={i} style={{height:ft/CEIL*BA,borderRadius:1.5,background:colorFor(ratingForHour(i)),opacity:0.92}}/>;
+          })}
+        </div>
+        <div style={{display:'grid',gridTemplateColumns:`repeat(${HOURS},1fr)`,gap:2}}>
+          {Array.from({length:HOURS}).map((_,i)=>(
+            <div key={i} style={{height:9,display:'flex',alignItems:'center',justifyContent:'center',fontSize:7.5,color:'var(--muted-foreground)',fontFamily:'var(--font-mono)',opacity:i%3===0?1:0}}>
+              {i%3===0?(i+6>12?`${i+6-12}p`:i+6===12?'12p':`${i+6}a`):''}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  /* ── V11 ── */
+  const V11 = () => {
+    const [data, setData]       = useState(null);
+    const [hourIdx, setHourIdx] = useState(0);
+
+    useEffect(() => {
+      loadSurfData()
+        .then(d  => { setData(d); setHourIdx(d.nowIdx); })
+        .catch(() => { setData(window.MOCK_DATA); setHourIdx(window.MOCK_DATA.nowIdx); });
+    }, []);
+
+    useEffect(() => { window.lucide && window.lucide.createIcons(); });
+
+    if (!data) return (
+      <div className="surf-screen" style={{alignItems:'center',justifyContent:'center'}}>
+        <div style={{textAlign:'center',padding:40}}>
+          <div className="live-dot" style={{margin:'0 auto 12px'}}/>
+          <div className="eyebrow">Loading surf data</div>
+          <div className="mono muted" style={{fontSize:10,marginTop:6}}>Fetching live conditions…</div>
+        </div>
+      </div>
+    );
+
+    const { now, swells, hourly, hourlyTides, tideEvents, daily, buoys, nowIdx } = data;
+    const cur = hourly[hourIdx];
+    const scrubTide = cur.tideFt;
+    const isTideRising = cur.hr < 23 && (hourlyTides[cur.hr+1]||0) > scrubTide;
+
+    // Next upcoming high tide
+    const parseEvtHour = e => {
+      const [ts,ap]=e.time.split(' ');const [h]=ts.split(':').map(Number);
+      return (ap==='PM'&&h!==12)?h+12:(ap==='AM'&&h===12?0:h);
+    };
+    const nextHigh = tideEvents.find(e=>e.label==='High'&&parseEvtHour(e)>cur.hr)
+                  || tideEvents.find(e=>e.label==='High');
+    const nextHighStr = nextHigh
+      ? `${nextHigh.time.replace(' AM','a').replace(' PM','p')} · ${nextHigh.heightFt}ft`
+      : '';
+
+    // Today's date for header
+    const d0 = new Date();
+    const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const MONS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const headerDate = `Matunuck · ${DAYS[d0.getDay()]} ${MONS[d0.getMonth()]} ${d0.getDate()}`;
+
+    return (
+      <div className="surf-screen">
+        <StatusBar/>
+
+        {/* Header */}
+        <div style={{padding:"4px 20px 10px",flexShrink:0}}>
+          <div style={{display:'flex',alignItems:'center',gap:8}}>
+            <div style={{fontSize:15,fontWeight:600,whiteSpace:'nowrap',lineHeight:1.1}}>Deep Hole</div>
+            <span className="badge badge-outline" style={{fontSize:10,gap:6,paddingLeft:8,lineHeight:1.1}}>
+              <span className="live-dot"/>Live
+            </span>
+          </div>
+          <div className="mono muted" style={{fontSize:10,marginTop:3,whiteSpace:'nowrap'}}>{headerDate}</div>
+        </div>
+
+        <div className="surf-scroll" style={{padding:"0 20px 32px"}}>
+
+          {/* Hero */}
+          <div style={{marginTop:4,marginBottom:14}}>
+            <div style={{display:'flex',alignItems:'baseline',justifyContent:'space-between',marginBottom:6}}>
+              <div className="eyebrow" style={{whiteSpace:'nowrap'}}>
+                {hourIdx===nowIdx?'Now':`At ${cur.t.toUpperCase()}`} · wave · period
+              </div>
+              <RatingPill rating={cur.rating} size="sm"/>
+            </div>
+            <div style={{display:'flex',alignItems:'flex-end',justifyContent:'space-between'}}>
+              <div style={{display:'flex',alignItems:'baseline',gap:6}}>
+                <span className="hero-num" style={{fontSize:80}}>{cur.waveFt.toFixed(1)}</span>
+                <span className="mono" style={{fontSize:14,fontWeight:500}}>ft</span>
+                <span className="mono" style={{fontSize:14,fontWeight:500,color:'var(--muted-foreground)'}}>@ {cur.periodS}s</span>
+              </div>
+              <CompassDial deg={cur.windDirDeg} label={window.SurfUtil.compass(cur.windDirDeg)} size={56}/>
+            </div>
+          </div>
+
+          {/* Scrubber */}
+          <ScrubberTimeline hourly={hourly} idx={hourIdx} onChange={setHourIdx} nowIdx={nowIdx}/>
+
+          {/* Wind + Swell tiles */}
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginTop:14}}>
+            <ScrubTile label="Wind" value={`${cur.windMph}`} unit="mph"
+              sub={`G ${cur.gustMph} · ${window.SurfUtil.compass(cur.windDirDeg)}`}>
+              <DirArrow deg={cur.windDirDeg} size={24}/>
+            </ScrubTile>
+            <ScrubTile label="Swell dir"
+              value={window.SurfUtil.compass(cur.swellDirDeg||swells[0]?.dirDeg||0)}
+              unit={`${cur.swellDirDeg||swells[0]?.dirDeg||0}°`}
+              sub="Primary">
+              <DirArrow deg={cur.swellDirDeg||swells[0]?.dirDeg||0} size={24}/>
+            </ScrubTile>
+          </div>
+
+          {/* Tide card */}
+          <div className="card" style={{padding:14,marginTop:10}}>
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+              <div className="eyebrow">Tide · 24h</div>
+              <span className="mono muted" style={{fontSize:10}}>
+                {isTideRising?'Rising':'Falling'}{nextHighStr?` · next high ${nextHighStr}`:''}
+              </span>
+            </div>
+            <div style={{display:'flex',alignItems:'baseline',gap:6,marginTop:6}}>
+              <span className="hero-num" style={{fontSize:30}}>{typeof scrubTide==='number'?scrubTide.toFixed(1):scrubTide}</span>
+              <span className="mono muted" style={{fontSize:11}}>ft @ {cur.t.toUpperCase()}</span>
+              <div style={{flex:1}}/>
+              <LIcon name={isTideRising?"arrow-up-right":"arrow-down-right"} size={18}/>
+            </div>
+            <FullTideSpark hourlyTides={hourlyTides} tideEvents={tideEvents} nowHour={cur.hr}/>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:6,marginTop:8}}>
+              {tideEvents.slice(0,4).map(e=>(
+                <div key={e.time}>
+                  <div className="eyebrow" style={{fontSize:9}}>{e.label}</div>
+                  <div className="mono" style={{fontSize:11,fontWeight:500,marginTop:1}}>{e.time.replace(' AM','a').replace(' PM','p')}</div>
+                  <div className="mono muted" style={{fontSize:9}}>{e.heightFt} ft</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Swell breakdown */}
+          <div className="card" style={{padding:14,marginTop:10}}>
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}}>
+              <div className="eyebrow">Swell components</div>
+              <span className="mono muted" style={{fontSize:10}}>{swells.length} stacked</span>
+            </div>
+            <SwellStack swells={swells}/>
+          </div>
+
+          {/* Environment */}
+          <div className="card" style={{padding:14,marginTop:10}}>
+            <div className="eyebrow" style={{marginBottom:10}}>Environment</div>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:10}}>
+              <EnvCell icon="thermometer-sun" label="Water" value={now.waterTempF!=='--'?`${now.waterTempF}°`:'--'}/>
+              <EnvCell icon="thermometer"     label="Air"   value={`${now.airTempF}°`}/>
+              <EnvCell icon="sunrise"         label="Rise"  value={now.sunrise.replace(' AM','a')}/>
+              <EnvCell icon="sunset"          label="Set"   value={now.sunset.replace(' PM','p')}/>
+            </div>
+          </div>
+
+          {/* 7-day */}
+          <div className="card" style={{padding:"8px 0",marginTop:10}}>
+            <div style={{display:'flex',alignItems:'baseline',justifyContent:'space-between',padding:"6px 14px 6px"}}>
+              <div className="eyebrow">7-day outlook</div>
+              <div className="mono muted" style={{fontSize:9}}>6a → 6p</div>
+            </div>
+            {daily.map((day,i)=>(
+              <div key={day.day+day.date} style={{
+                padding:"10px 14px",display:'grid',gridTemplateColumns:'30px 1fr 60px',
+                gap:10,alignItems:'center',
+                borderBottom:i===daily.length-1?'none':'1px solid var(--border)'}}>
+                <div>
+                  <div style={{fontSize:12,fontWeight:600,lineHeight:1}}>{day.day}</div>
+                  <div className="mono muted" style={{fontSize:9,marginTop:3}}>{day.date.split(' ')[1]}</div>
+                </div>
+                <DayHourRibbon day={day}/>
+                <div style={{textAlign:'right'}}>
+                  <div className="mono" style={{fontSize:11,fontWeight:600}}>
+                    {day.waveMin}–{day.waveMax}<span className="muted" style={{fontWeight:400}}> ft</span>
+                  </div>
+                  <div className="mono muted" style={{fontSize:9,marginTop:2}}>{day.periodS}s · {day.windMph}mph</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Buoys */}
+          <div className="card" style={{padding:14,marginTop:10}}>
+            <div className="eyebrow" style={{marginBottom:10}}>Offshore buoys</div>
+            <div style={{display:'flex',flexDirection:'column',gap:10}}>
+              {buoys.map(b=>(
+                <div key={b.id} style={{display:'grid',gridTemplateColumns:'1fr auto',gap:10,alignItems:'center'}}>
+                  <div>
+                    <div style={{display:'flex',alignItems:'center',gap:6}}>
+                      <span style={{fontSize:12,fontWeight:600}}>{b.name}</span>
+                      <span className="mono muted" style={{fontSize:10}}>{b.id}</span>
+                    </div>
+                    <div className="mono muted" style={{fontSize:10,marginTop:2}}>
+                      {b.distanceMi} mi offshore · upd {b.updated}
+                    </div>
+                  </div>
+                  <div style={{display:'flex',alignItems:'center',gap:10}}>
+                    <div style={{textAlign:'right'}}>
+                      <div className="mono" style={{fontSize:13,fontWeight:500}}>{b.waveFt!=='--'?`${b.waveFt} ft`:'--'}</div>
+                      <div className="mono muted" style={{fontSize:10}}>{b.periodS!=='--'?`${b.periodS}s · `:'--'}{b.waveDirDeg?window.SurfUtil.compass(b.waveDirDeg):''}</div>
+                    </div>
+                    <DirArrow deg={b.waveDirDeg||0} size={18}/>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div style={{height:8}}/>
+        </div>
+      </div>
+    );
+  };
+
+  ReactDOM.createRoot(document.getElementById('root')).render(<V11/>);
+  </script>
+</body>
+</html>
