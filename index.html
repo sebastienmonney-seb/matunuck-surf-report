@@ -110,6 +110,19 @@
     .rating-fair { background: var(--rating-fair); color: #fff; border: 1px solid var(--rating-fair); }
     .rating-good { background: var(--rating-good); color: #fff; border: 1px solid var(--rating-good); }
     .rating-epic { background: var(--rating-epic); color: #fff; border: 1px solid var(--rating-epic); }
+    /* Dark mode overrides — scoped to .surf-screen.dark so only the app shell flips */
+    .surf-screen.dark {
+      --background: oklch(0.145 0 0);
+      --foreground: oklch(0.985 0 0);
+      --card: oklch(0.205 0 0);
+      --primary: oklch(0.922 0 0);
+      --primary-foreground: oklch(0.205 0 0);
+      --secondary: oklch(0.269 0 0);
+      --muted: oklch(0.269 0 0);
+      --muted-foreground: oklch(0.708 0 0);
+      --border: oklch(1 0 0 / 10%);
+    }
+    body.dark { background: oklch(0.08 0 0); }
   </style>
 </head>
 <body>
@@ -657,6 +670,12 @@
   const V11 = () => {
     const [data, setData]       = useState(null);
     const [hourIdx, setHourIdx] = useState(0);
+    const [dark, setDark]       = useState(() => localStorage.getItem('surf-theme') === 'dark');
+
+    useEffect(() => {
+      document.body.classList.toggle('dark', dark);
+      localStorage.setItem('surf-theme', dark ? 'dark' : 'light');
+    }, [dark]);
 
     useEffect(() => {
       loadSurfData()
@@ -699,18 +718,27 @@
     const headerDate = `Matunuck · ${DAYS[d0.getDay()]} ${MONS[d0.getMonth()]} ${d0.getDate()}`;
 
     return (
-      <div className="surf-screen">
+      <div className={`surf-screen${dark?' dark':''}`}>
         <StatusBar/>
 
         {/* Header */}
-        <div style={{padding:"4px 20px 10px",flexShrink:0}}>
-          <div style={{display:'flex',alignItems:'center',gap:8}}>
-            <div style={{fontSize:15,fontWeight:600,whiteSpace:'nowrap',lineHeight:1.1}}>Deep Hole</div>
-            <span className="badge badge-outline" style={{fontSize:10,gap:6,paddingLeft:8,lineHeight:1.1}}>
-              <span className="live-dot"/>Live
-            </span>
+        <div style={{padding:"4px 20px 10px",flexShrink:0,display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
+          <div>
+            <div style={{display:'flex',alignItems:'center',gap:8}}>
+              <div style={{fontSize:15,fontWeight:600,whiteSpace:'nowrap',lineHeight:1.1}}>Deep Hole</div>
+              <span className="badge badge-outline" style={{fontSize:10,gap:6,paddingLeft:8,lineHeight:1.1}}>
+                <span className="live-dot"/>Live
+              </span>
+            </div>
+            <div className="mono muted" style={{fontSize:10,marginTop:3,whiteSpace:'nowrap'}}>{headerDate}</div>
           </div>
-          <div className="mono muted" style={{fontSize:10,marginTop:3,whiteSpace:'nowrap'}}>{headerDate}</div>
+          <button type="button" onClick={()=>setDark(d=>!d)} style={{
+            background:'transparent',border:'none',cursor:'pointer',
+            padding:6,borderRadius:6,color:'var(--muted-foreground)',
+            display:'flex',alignItems:'center',marginTop:2,
+          }}>
+            <LIcon name={dark?'sun':'moon'} size={16}/>
+          </button>
         </div>
 
         <div className="surf-scroll" style={{padding:"0 20px 32px"}}>
