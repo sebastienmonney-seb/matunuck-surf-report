@@ -185,7 +185,7 @@
 
   // Kept as fallback if any critical API fails
   window.MOCK_DATA = {
-    nowIdx: 6,
+    nowIdx: 1,
     hourlyTides: Array.from({length:24}, (_,h) =>
       Math.round((1.7 + 1.45 * Math.sin((h-8)*Math.PI/6))*10)/10),
     now: {
@@ -310,7 +310,7 @@
       : (sstC != null ? Math.round((sstC * 9/5 + 32)*10)/10 : null);
 
     // ── Hourly scrubber array (5 am – 8 pm) ──
-    const HS = 0, HE = 23;
+    const HS = 5, HE = 21;
     const hourly = [];
     for (let h = HS; h <= HE; h++) {
       const waveFt  = Math.round((mh.wave_height[h]||0)*10)/10;
