@@ -745,7 +745,8 @@
             marginTop: (refreshing || pullY>0) ? 4 : 0,
             marginBottom: (refreshing || pullY>0) ? 4 : 0,
           }}>
-            <div className="live-dot" style={{transform:`scale(${refreshing?1:Math.min(1,pullY/60)})`}}/>
+            <div className="live-dot" style={{transform:`scale(${refreshing?1:Math.min(1,pullY/60)})`,flexShrink:0}}/>
+            {(refreshing || pullY>=60) && <span className="mono muted" style={{fontSize:11,marginLeft:7}}>Refreshing...</span>}
           </div>
 
           {/* Hero */}
