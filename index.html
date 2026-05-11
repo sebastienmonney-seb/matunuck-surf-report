@@ -225,10 +225,10 @@
       {t:"11p",hr:23,waveFt:1.9,periodS:9, windMph:3, gustMph:5, windDirDeg:350,swellDirDeg:160,tideFt:1.5,rating:"Fair"},
     ],
     tideEvents:[
-      {time:"2:04 AM",label:"Low", heightFt:0.3},
-      {time:"8:12 AM",label:"High",heightFt:3.2},
-      {time:"2:28 PM",label:"Low", heightFt:0.4},
-      {time:"8:42 PM",label:"High",heightFt:3.0},
+      {time:"3:21 AM",label:"High",heightFt:3.2},
+      {time:"9:20 AM",label:"Low", heightFt:0.5},
+      {time:"3:54 PM",label:"High",heightFt:3.4},
+      {time:"10:02 PM",label:"Low", heightFt:0.6},
     ],
     daily:[
       {day:"Tue",date:"Apr 22",waveMin:2.5,waveMax:3.5,periodS:11,windMph:8, windDirDeg:30, rating:"Good"},
@@ -258,7 +258,7 @@
     const NP = 'datum=MLLW&station=8454049&time_zone=lst_ldt&units=english&application=matunuck&format=json';
 
     const nc = { cache: 'no-store' };
-    const safeJSON = async r => { try { return await r.json(); } catch { return null; } };
+    const safeJSON = async r => { try { if (!r.ok) return null; return await r.json(); } catch { return null; } };
 
     const [mRes, fRes, hiloRes, hrlyRes, wtRes] = await Promise.allSettled([
       fetch(`https://marine-api.open-meteo.com/v1/marine?latitude=${LAT}&longitude=${LON}&hourly=wave_height,wave_period,wave_direction,swell_wave_height,swell_wave_period,swell_wave_direction,wind_wave_height,wind_wave_period,wind_wave_direction,sea_surface_temperature&daily=wave_height_max,wave_period_max,wave_direction_dominant&length_unit=imperial&timezone=America%2FNew_York&forecast_days=7`, nc),
