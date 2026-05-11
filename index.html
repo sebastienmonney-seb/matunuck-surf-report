@@ -255,7 +255,7 @@
     const todayISO    = `${yr}-${mo}-${dy}`;
     const nowHour = now.getHours();
     const NB = 'https://api.tidesandcurrents.noaa.gov/api/prod/datagetter';
-    const NP = 'datum=MLLW&station=8454049&time_zone=lst/ldt&units=english&application=matunuck&format=json';
+    const NP = 'datum=MLLW&station=8454049&time_zone=lst_ldt&units=english&application=matunuck&format=json';
 
     const nc = { cache: 'no-store' };
     const safeJSON = async r => { try { return await r.json(); } catch { return null; } };
@@ -265,7 +265,7 @@
       fetch(`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&hourly=wind_speed_10m,wind_gusts_10m,wind_direction_10m,temperature_2m&daily=sunrise,sunset,wind_speed_10m_max,wind_direction_10m_dominant&wind_speed_unit=mph&temperature_unit=fahrenheit&timezone=America%2FNew_York&forecast_days=7`, nc),
       fetch(`${NB}?product=predictions&begin_date=${todayCompact}&range=48&interval=hilo&${NP}`, nc),
       fetch(`${NB}?product=predictions&begin_date=${todayCompact}&range=24&interval=h&${NP}`, nc),
-      fetch(`${NB}?product=water_temperature&date=latest&station=8454049&time_zone=lst/ldt&units=english&application=matunuck&format=json`, nc),
+      fetch(`${NB}?product=water_temperature&date=latest&station=8454049&time_zone=lst_ldt&units=english&application=matunuck&format=json`, nc),
     ]);
 
     const get = r => r.status === 'fulfilled' ? safeJSON(r.value) : Promise.resolve(null);
