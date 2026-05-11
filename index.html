@@ -231,13 +231,11 @@
       {time:"10:02 PM",label:"Low", heightFt:0.6},
     ],
     daily:[
-      {day:"Tue",date:"Apr 22",waveMin:2.5,waveMax:3.5,periodS:11,windMph:8, windDirDeg:30, rating:"Good"},
-      {day:"Wed",date:"Apr 23",waveMin:3.0,waveMax:4.0,periodS:12,windMph:6, windDirDeg:10, rating:"Epic"},
-      {day:"Thu",date:"Apr 24",waveMin:2.0,waveMax:3.0,periodS:10,windMph:12,windDirDeg:200,rating:"Fair"},
-      {day:"Fri",date:"Apr 25",waveMin:1.0,waveMax:2.0,periodS:8, windMph:18,windDirDeg:220,rating:"Poor"},
-      {day:"Sat",date:"Apr 26",waveMin:1.5,waveMax:2.5,periodS:9, windMph:10,windDirDeg:20, rating:"Fair"},
-      {day:"Sun",date:"Apr 27",waveMin:2.5,waveMax:3.5,periodS:11,windMph:7, windDirDeg:350,rating:"Good"},
-      {day:"Mon",date:"Apr 28",waveMin:3.0,waveMax:4.5,periodS:12,windMph:5, windDirDeg:20, rating:"Epic"},
+      {day:"Tue",date:"May 12",waveMin:3.0,waveMax:4.0,periodS:12,windMph:6, windDirDeg:10, rating:"Epic"},
+      {day:"Wed",date:"May 13",waveMin:2.0,waveMax:3.0,periodS:10,windMph:12,windDirDeg:200,rating:"Fair"},
+      {day:"Thu",date:"May 14",waveMin:1.0,waveMax:2.0,periodS:8, windMph:18,windDirDeg:220,rating:"Poor"},
+      {day:"Fri",date:"May 15",waveMin:1.5,waveMax:2.5,periodS:9, windMph:10,windDirDeg:20, rating:"Fair"},
+      {day:"Sat",date:"May 16",waveMin:2.5,waveMax:3.5,periodS:11,windMph:7, windDirDeg:350,rating:"Good"},
     ],
     buoys:[
       {id:"44097",name:"Block Island",distanceMi:12,waveFt:4.3,periodS:11,waveDirDeg:165,updated:"--"},
@@ -346,7 +344,7 @@
     // ── Daily (7 days) ──
     const DAYS  = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
     const MONTHS= ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    const daily = (md.time||[]).slice(0,7).map((ds,i) => {
+    const daily = (md.time||[]).slice(1,6).map((ds,i) => { i = i+1;
       const d = new Date(ds+'T12:00:00');
       const waveMax = Math.round((md.wave_height_max[i]||0)*10)/10;
       const waveMin = Math.round(waveMax*0.65*10)/10;
@@ -833,7 +831,7 @@
           {/* 7-day */}
           <div className="card" style={{padding:"8px 0",marginTop:10}}>
             <div style={{display:'flex',alignItems:'baseline',justifyContent:'space-between',padding:"6px 14px 6px"}}>
-              <div className="eyebrow">7-day outlook</div>
+              <div className="eyebrow">5-day outlook</div>
               <div className="mono muted" style={{fontSize:9}}>6a → 6p</div>
             </div>
             {daily.map((day,i)=>(
