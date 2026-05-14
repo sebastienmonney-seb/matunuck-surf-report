@@ -30,9 +30,10 @@
       --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
       --font-mono: "Geist Mono", ui-monospace, monospace;
       --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-      --rating-poor: oklch(0.44 0.22 27);
-      --rating-fair: oklch(0.46 0.14 55);
-      --rating-good: oklch(0.42 0.14 150);
+      --rating-poor: oklch(0.62 0.22 27);
+      --rating-poor-fair: oklch(0.70 0.17 55);
+      --rating-fair: oklch(0.58 0.16 150);
+      --rating-good: oklch(0.50 0.18 230);
       --rating-epic: oklch(0.55 0.22 305);
     }
     *, *::before, *::after { box-sizing: border-box; }
@@ -98,6 +99,7 @@
       border-radius: 999px; font-size: 12px; font-weight: 600; letter-spacing: -0.005em;
     }
     .rating-poor { background: var(--rating-poor); color: #fff; border: 1px solid var(--rating-poor); }
+    .rating-poor-fair { background: var(--rating-poor-fair); color: #fff; border: 1px solid var(--rating-poor-fair); }
     .rating-fair { background: var(--rating-fair); color: #fff; border: 1px solid var(--rating-fair); }
     .rating-good { background: var(--rating-good); color: #fff; border: 1px solid var(--rating-good); }
     .rating-epic { background: var(--rating-epic); color: #fff; border: 1px solid var(--rating-epic); }
@@ -197,9 +199,10 @@
     else if (off) s += 1;
     else if (on && windMph > 20) s -= 2;
     else if (on) s -= 1;
-    if (s >= 6) return 'Epic';
-    if (s >= 4) return 'Good';
-    if (s >= 2) return 'Fair';
+    if (s >= 7) return 'Epic';
+    if (s >= 5) return 'Good';
+    if (s >= 3) return 'Fair';
+    if (s >= 2) return 'Poor to Fair';
     return 'Poor';
   }
 
@@ -209,7 +212,7 @@
     hourlyTides: Array.from({length:24}, (_,h) =>
       Math.round((1.7 + 1.45 * Math.sin((h-8)*Math.PI/6))*10)/10),
     now: {
-      rating:"Good", waveMax:3.1, waveMin:2.5, period:11,
+      rating:"Poor to Fair", waveMax:3.1, waveMin:2.5, period:11,
       waveDirection:"SSE", waveDirDeg:160,
       wind:{speed:4,gust:7,dirDeg:15,dirLabel:"NNE",quality:"Offshore"},
       waterTempF:48, airTempF:52, sunrise:"5:58 AM", sunset:"7:34 PM",
@@ -219,30 +222,30 @@
       {label:"Secondary",heightFt:1.4,periodS:8, dirDeg:135,dirLabel:"SE", energy:22},
     ],
     hourly:[
-      {t:"12a",hr:0, waveFt:2.0,periodS:10,windMph:4, gustMph:6, windDirDeg:5,  swellDirDeg:160,tideFt:2.5,rating:"Good"},
-      {t:"1a", hr:1, waveFt:2.1,periodS:10,windMph:3, gustMph:5, windDirDeg:5,  swellDirDeg:160,tideFt:1.8,rating:"Good"},
-      {t:"2a", hr:2, waveFt:2.2,periodS:11,windMph:3, gustMph:4, windDirDeg:10, swellDirDeg:160,tideFt:0.9,rating:"Good"},
-      {t:"3a", hr:3, waveFt:2.3,periodS:11,windMph:2, gustMph:4, windDirDeg:10, swellDirDeg:160,tideFt:0.4,rating:"Good"},
-      {t:"4a", hr:4, waveFt:2.5,periodS:11,windMph:2, gustMph:4, windDirDeg:10, swellDirDeg:160,tideFt:0.5,rating:"Good"},
-      {t:"5a", hr:5, waveFt:2.9,periodS:11,windMph:3, gustMph:5, windDirDeg:10, swellDirDeg:160,tideFt:1.3,rating:"Good"},
-      {t:"6a", hr:6, waveFt:3.1,periodS:11,windMph:4, gustMph:7, windDirDeg:15, swellDirDeg:160,tideFt:1.8,rating:"Good"},
-      {t:"7a", hr:7, waveFt:3.2,periodS:11,windMph:5, gustMph:8, windDirDeg:20, swellDirDeg:160,tideFt:2.5,rating:"Good"},
-      {t:"8a", hr:8, waveFt:3.3,periodS:11,windMph:6, gustMph:10,windDirDeg:30, swellDirDeg:160,tideFt:3.1,rating:"Epic"},
-      {t:"9a", hr:9, waveFt:3.4,periodS:10,windMph:8, gustMph:12,windDirDeg:60, swellDirDeg:162,tideFt:3.0,rating:"Good"},
-      {t:"10a",hr:10,waveFt:3.2,periodS:10,windMph:10,gustMph:14,windDirDeg:110,swellDirDeg:162,tideFt:2.6,rating:"Good"},
-      {t:"11a",hr:11,waveFt:3.0,periodS:10,windMph:12,gustMph:16,windDirDeg:150,swellDirDeg:165,tideFt:2.0,rating:"Fair"},
-      {t:"12p",hr:12,waveFt:2.8,periodS:9, windMph:14,gustMph:18,windDirDeg:180,swellDirDeg:165,tideFt:1.3,rating:"Fair"},
-      {t:"1p", hr:13,waveFt:2.6,periodS:9, windMph:15,gustMph:20,windDirDeg:200,swellDirDeg:165,tideFt:0.8,rating:"Fair"},
+      {t:"12a",hr:0, waveFt:2.0,periodS:10,windMph:4, gustMph:6, windDirDeg:5,  swellDirDeg:160,tideFt:2.5,rating:"Fair"},
+      {t:"1a", hr:1, waveFt:2.1,periodS:10,windMph:3, gustMph:5, windDirDeg:5,  swellDirDeg:160,tideFt:1.8,rating:"Fair"},
+      {t:"2a", hr:2, waveFt:2.2,periodS:11,windMph:3, gustMph:4, windDirDeg:10, swellDirDeg:160,tideFt:0.9,rating:"Fair"},
+      {t:"3a", hr:3, waveFt:2.3,periodS:11,windMph:2, gustMph:4, windDirDeg:10, swellDirDeg:160,tideFt:0.4,rating:"Fair"},
+      {t:"4a", hr:4, waveFt:2.5,periodS:11,windMph:2, gustMph:4, windDirDeg:10, swellDirDeg:160,tideFt:0.5,rating:"Fair"},
+      {t:"5a", hr:5, waveFt:2.9,periodS:11,windMph:3, gustMph:5, windDirDeg:10, swellDirDeg:160,tideFt:1.3,rating:"Fair"},
+      {t:"6a", hr:6, waveFt:3.1,periodS:11,windMph:4, gustMph:7, windDirDeg:15, swellDirDeg:160,tideFt:1.8,rating:"Fair"},
+      {t:"7a", hr:7, waveFt:3.2,periodS:11,windMph:5, gustMph:8, windDirDeg:20, swellDirDeg:160,tideFt:2.5,rating:"Fair"},
+      {t:"8a", hr:8, waveFt:3.3,periodS:11,windMph:6, gustMph:10,windDirDeg:30, swellDirDeg:160,tideFt:3.1,rating:"Good"},
+      {t:"9a", hr:9, waveFt:3.4,periodS:10,windMph:8, gustMph:12,windDirDeg:60, swellDirDeg:162,tideFt:3.0,rating:"Fair"},
+      {t:"10a",hr:10,waveFt:3.2,periodS:10,windMph:10,gustMph:14,windDirDeg:110,swellDirDeg:162,tideFt:2.6,rating:"Fair"},
+      {t:"11a",hr:11,waveFt:3.0,periodS:10,windMph:12,gustMph:16,windDirDeg:150,swellDirDeg:165,tideFt:2.0,rating:"Poor to Fair"},
+      {t:"12p",hr:12,waveFt:2.8,periodS:9, windMph:14,gustMph:18,windDirDeg:180,swellDirDeg:165,tideFt:1.3,rating:"Poor to Fair"},
+      {t:"1p", hr:13,waveFt:2.6,periodS:9, windMph:15,gustMph:20,windDirDeg:200,swellDirDeg:165,tideFt:0.8,rating:"Poor to Fair"},
       {t:"2p", hr:14,waveFt:2.5,periodS:9, windMph:16,gustMph:22,windDirDeg:210,swellDirDeg:165,tideFt:0.5,rating:"Poor"},
       {t:"3p", hr:15,waveFt:2.4,periodS:9, windMph:17,gustMph:23,windDirDeg:215,swellDirDeg:165,tideFt:0.7,rating:"Poor"},
       {t:"4p", hr:16,waveFt:2.3,periodS:9, windMph:15,gustMph:20,windDirDeg:220,swellDirDeg:165,tideFt:1.2,rating:"Poor"},
-      {t:"5p", hr:17,waveFt:2.3,periodS:9, windMph:12,gustMph:16,windDirDeg:230,swellDirDeg:163,tideFt:1.9,rating:"Fair"},
-      {t:"6p", hr:18,waveFt:2.2,periodS:9, windMph:9, gustMph:12,windDirDeg:250,swellDirDeg:163,tideFt:2.6,rating:"Fair"},
-      {t:"7p", hr:19,waveFt:2.2,periodS:9, windMph:6, gustMph:9, windDirDeg:280,swellDirDeg:162,tideFt:3.0,rating:"Good"},
-      {t:"8p", hr:20,waveFt:2.1,periodS:9, windMph:4, gustMph:6, windDirDeg:320,swellDirDeg:160,tideFt:3.0,rating:"Good"},
-      {t:"9p", hr:21,waveFt:2.0,periodS:9, windMph:4, gustMph:6, windDirDeg:330,swellDirDeg:160,tideFt:2.7,rating:"Good"},
-      {t:"10p",hr:22,waveFt:2.0,periodS:9, windMph:3, gustMph:5, windDirDeg:340,swellDirDeg:160,tideFt:2.2,rating:"Good"},
-      {t:"11p",hr:23,waveFt:1.9,periodS:9, windMph:3, gustMph:5, windDirDeg:350,swellDirDeg:160,tideFt:1.5,rating:"Fair"},
+      {t:"5p", hr:17,waveFt:2.3,periodS:9, windMph:12,gustMph:16,windDirDeg:230,swellDirDeg:163,tideFt:1.9,rating:"Poor to Fair"},
+      {t:"6p", hr:18,waveFt:2.2,periodS:9, windMph:9, gustMph:12,windDirDeg:250,swellDirDeg:163,tideFt:2.6,rating:"Poor to Fair"},
+      {t:"7p", hr:19,waveFt:2.2,periodS:9, windMph:6, gustMph:9, windDirDeg:280,swellDirDeg:162,tideFt:3.0,rating:"Fair"},
+      {t:"8p", hr:20,waveFt:2.1,periodS:9, windMph:4, gustMph:6, windDirDeg:320,swellDirDeg:160,tideFt:3.0,rating:"Fair"},
+      {t:"9p", hr:21,waveFt:2.0,periodS:9, windMph:4, gustMph:6, windDirDeg:330,swellDirDeg:160,tideFt:2.7,rating:"Fair"},
+      {t:"10p",hr:22,waveFt:2.0,periodS:9, windMph:3, gustMph:5, windDirDeg:340,swellDirDeg:160,tideFt:2.2,rating:"Fair"},
+      {t:"11p",hr:23,waveFt:1.9,periodS:9, windMph:3, gustMph:5, windDirDeg:350,swellDirDeg:160,tideFt:1.5,rating:"Poor to Fair"},
     ],
     tideEvents:[
       {time:"3:21 AM",label:"High",heightFt:3.2},
@@ -251,11 +254,11 @@
       {time:"10:02 PM",label:"Low", heightFt:0.6},
     ],
     daily:[
-      {day:"Tue",date:"May 12",waveMin:3.0,waveMax:4.0,periodS:12,windMph:6, windDirDeg:10, rating:"Epic"},
-      {day:"Wed",date:"May 13",waveMin:2.0,waveMax:3.0,periodS:10,windMph:12,windDirDeg:200,rating:"Fair"},
+      {day:"Tue",date:"May 12",waveMin:3.0,waveMax:4.0,periodS:12,windMph:6, windDirDeg:10, rating:"Good"},
+      {day:"Wed",date:"May 13",waveMin:2.0,waveMax:3.0,periodS:10,windMph:12,windDirDeg:200,rating:"Poor to Fair"},
       {day:"Thu",date:"May 14",waveMin:1.0,waveMax:2.0,periodS:8, windMph:18,windDirDeg:220,rating:"Poor"},
-      {day:"Fri",date:"May 15",waveMin:1.5,waveMax:2.5,periodS:9, windMph:10,windDirDeg:20, rating:"Fair"},
-      {day:"Sat",date:"May 16",waveMin:2.5,waveMax:3.5,periodS:11,windMph:7, windDirDeg:350,rating:"Good"},
+      {day:"Fri",date:"May 15",waveMin:1.5,waveMax:2.5,periodS:9, windMph:10,windDirDeg:20, rating:"Poor to Fair"},
+      {day:"Sat",date:"May 16",waveMin:2.5,waveMax:3.5,periodS:11,windMph:7, windDirDeg:350,rating:"Fair"},
     ],
     buoys:[
       {id:"44097",name:"Block Island",distanceMi:12,waveFt:4.3,periodS:11,waveDirDeg:165,updated:"--"},
@@ -450,7 +453,7 @@
   };
 
   const RatingPill = ({ rating, size="md" }) => {
-    const cls={Poor:"rating-poor",Fair:"rating-fair",Good:"rating-good",Epic:"rating-epic"}[rating]||"rating-fair";
+    const cls={Poor:"rating-poor","Poor to Fair":"rating-poor-fair",Fair:"rating-fair",Good:"rating-good",Epic:"rating-epic"}[rating]||"rating-poor";
     return <span className={`rating-pill ${cls}`} style={{padding:size==="sm"?"2px 8px":"3px 10px",fontSize:size==="sm"?11:12}}>{rating}</span>;
   };
 
@@ -503,7 +506,7 @@
     const bMax = dataMax + span * 0.08;
     const bMin = Math.max(0, dataMin - span * 0.18);
     const svgRef = useRef(null);
-    const rc = r=>({Epic:'var(--rating-epic)',Good:'var(--rating-good)',Fair:'var(--rating-fair)',Poor:'var(--rating-poor)'})[r];
+    const rc = r=>({Epic:'var(--rating-epic)',Good:'var(--rating-good)',Fair:'var(--rating-fair)','Poor to Fair':'var(--rating-poor-fair)',Poor:'var(--rating-poor)'})[r]||'var(--rating-poor)';
     const hitTest = cx=>{const rect=svgRef.current.getBoundingClientRect();return Math.max(0,Math.min(n-1,Math.floor((cx-rect.left)/rect.width*n)));};
     const handleDown = e=>{
       e.preventDefault();
@@ -629,11 +632,11 @@
   /* ── Tide spark — driven by real hourlyTides array ── */
   const FullTideSpark = ({ hourlyTides, tideEvents, nowHour }) => {
     const W=320,H=60;
-    const valid = hourlyTides.filter(v=>!isNaN(v)&&v>0);
+    const valid = hourlyTides.filter(v=>!isNaN(v));
     const minT = valid.length ? Math.min(...valid) : 0;
     const maxT = valid.length ? Math.max(...valid) : 4;
     const range = maxT - minT || 1;
-    const yFor = ft => H - (ft-minT)/range*(H-8) - 4;
+    const yFor = ft => H - (ft-minT)/range*(H-16) - 8;
     const pts = hourlyTides.map((ft,hr)=>({ x: hr/23*(W-4)+2, y: yFor(ft||0) }));
     const d = pts.map((p,i)=>`${i===0?'M':'L'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ');
     const nx = Math.min(nowHour,23)/23*(W-4)+2;
@@ -669,10 +672,10 @@
     const min=day.waveMin,max=day.waveMax,mid=(min+max)/2,amp=(max-min)/2;
     const seed=day.day.charCodeAt(0)+day.day.charCodeAt(1);
     const nudge=i=>((seed*9301+i*49297)%233280/233280-0.5)*(amp*0.35);
-    const RATINGS=['Poor','Fair','Good','Epic'];
+    const RATINGS=['Poor','Poor to Fair','Fair','Good','Epic'];
     const baseIdx=RATINGS.indexOf(day.rating);
-    const ratingForHour=h=>{const dist=Math.abs(h+6-peakHour);return RATINGS[Math.max(0,Math.min(3,baseIdx-Math.floor(dist/4)))];};
-    const colorFor=r=>({Poor:'var(--rating-poor)',Fair:'var(--rating-fair)',Good:'var(--rating-good)',Epic:'var(--rating-epic)'})[r];
+    const ratingForHour=h=>{const dist=Math.abs(h+6-peakHour);return RATINGS[Math.max(0,Math.min(4,baseIdx-Math.floor(dist/4)))];};
+    const colorFor=r=>({Poor:'var(--rating-poor)','Poor to Fair':'var(--rating-poor-fair)',Fair:'var(--rating-fair)',Good:'var(--rating-good)',Epic:'var(--rating-epic)'})[r]||'var(--rating-poor)';
     const CEIL=5,BA=26;
     return (
       <div style={{display:'flex',flexDirection:'column',gap:3}}>
