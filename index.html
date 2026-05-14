@@ -25,14 +25,14 @@
       --primary-foreground: oklch(0.985 0 0);
       --secondary: oklch(0.97 0 0);
       --muted: oklch(0.97 0 0);
-      --muted-foreground: oklch(0.556 0 0);
+      --muted-foreground: oklch(0.545 0 0);
       --border: oklch(0.922 0 0);
       --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
       --font-mono: "Geist Mono", ui-monospace, monospace;
       --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-      --rating-poor: oklch(0.62 0.22 27);
-      --rating-fair: oklch(0.70 0.17 60);
-      --rating-good: oklch(0.58 0.16 150);
+      --rating-poor: oklch(0.44 0.22 27);
+      --rating-fair: oklch(0.46 0.14 55);
+      --rating-good: oklch(0.42 0.14 150);
       --rating-epic: oklch(0.55 0.22 305);
     }
     *, *::before, *::after { box-sizing: border-box; }
@@ -45,7 +45,7 @@
       min-height: 100dvh;
       display: flex;
       justify-content: center;
-      padding: 32px 0 64px;
+      padding: 0 0 64px;
     }
     .surf-screen {
       width: 390px;
@@ -114,6 +114,26 @@
       --border: oklch(1 0 0 / 10%);
     }
     body.dark { background: oklch(0.08 0 0); }
+    @media (prefers-reduced-motion: reduce) {
+      .live-dot {
+        animation: none;
+      }
+      *, *::before, *::after {
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+      }
+    }
+    :focus-visible {
+      outline: 2px solid oklch(0.55 0.22 305);
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+    svg[role="slider"]:focus-visible {
+      outline: 2px solid oklch(0.55 0.22 305);
+      outline-offset: 2px;
+      border-radius: var(--radius-sm);
+    }
   </style>
 </head>
 <body>
@@ -410,7 +430,7 @@
   const { useState, useEffect, useRef } = React;
 
   /* ── Status bar with live clock ── */
-  const LIcon = ({ name, size=16, style={} }) => {
+  const LIcon = ({ name, size=16, style={}, ariaHidden, ariaLabel }) => {
     const ref = useRef();
     useEffect(() => {
       if (ref.current && window.lucide) {
@@ -418,9 +438,14 @@
         const i=document.createElement('i'); i.setAttribute('data-lucide',name);
         ref.current.appendChild(i); window.lucide.createIcons();
         const svg=ref.current.querySelector('svg');
-        if(svg){svg.setAttribute('width',size);svg.setAttribute('height',size);}
+        if(svg){
+          svg.setAttribute('width',size);
+          svg.setAttribute('height',size);
+          if(ariaHidden) svg.setAttribute('aria-hidden','true');
+          if(ariaLabel) svg.setAttribute('aria-label',ariaLabel);
+        }
       }
-    },[name,size]);
+    },[name,size,ariaHidden,ariaLabel]);
     return <span ref={ref} style={{display:'inline-flex',alignItems:'center',lineHeight:0,...style}}/>;
   };
 
@@ -429,8 +454,11 @@
     return <span className={`rating-pill ${cls}`} style={{padding:size==="sm"?"2px 8px":"3px 10px",fontSize:size==="sm"?11:12}}>{rating}</span>;
   };
 
-  const DirArrow = ({ deg, size=20, stroke=1.8, color="var(--foreground)" }) => (
+  const DirArrow = ({ deg, size=20, stroke=1.8, color="var(--foreground)", label="" }) => (
     <svg width={size} height={size} viewBox="0 0 24 24"
+      role={label ? "img" : "presentation"}
+      aria-label={label || undefined}
+      aria-hidden={label ? undefined : "true"}
       style={{transform:`rotate(${deg+180}deg)`,transition:'transform 200ms ease'}}
       fill="none" stroke={color} strokeWidth={stroke} strokeLinecap="round" strokeLinejoin="round">
       <path d="M12 4 L12 20"/><path d="M6 10 L12 4 L18 10"/>
@@ -438,8 +466,12 @@
   );
 
   const CompassDial = ({ deg, label, size=56 }) => (
-    <div style={{position:'relative',width:size,height:size}}>
-      <svg width={size} height={size} viewBox="0 0 56 56">
+    <div
+      style={{position:'relative',width:size,height:size}}
+      role="img"
+      aria-label={label ? `Compass: ${label}, ${deg} degrees` : `Compass: ${deg} degrees`}
+    >
+      <svg width={size} height={size} viewBox="0 0 56 56" aria-hidden="true">
         <circle cx="28" cy="28" r="26" fill="var(--card)" stroke="var(--border)"/>
         {["N","E","S","W"].map((c,i)=>{
           const a=i*90,x=28+Math.sin(a*Math.PI/180)*21.5,y=28-Math.cos(a*Math.PI/180)*21.5+2.5;
@@ -456,7 +488,7 @@
           <line x1="28" y1="16" x2="28" y2="40" stroke="var(--foreground)" strokeWidth="1.5" strokeLinecap="round"/>
         </g>
       </svg>
-      {label&&<div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:600,fontFamily:'var(--font-mono)',pointerEvents:'none'}}>
+      {label&&<div aria-hidden="true" style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',fontSize:11,fontWeight:600,fontFamily:'var(--font-mono)',pointerEvents:'none'}}>
         <span style={{background:'var(--card)',padding:'0 3px',marginTop:1}}>{label}</span>
       </div>}
     </div>
@@ -487,20 +519,38 @@
         <div style={{display:'flex',justifyContent:'space-between',padding:"0 14px 8px",gap:8}}>
           <div className="eyebrow" style={{whiteSpace:'nowrap'}}>Scrubber</div>
           <div className="mono" style={{fontSize:10,whiteSpace:'nowrap',display:'flex',alignItems:'center',gap:6}}>
-            <button type="button" onClick={()=>idx!==nowIdx&&onChange(nowIdx)} style={{
-              fontFamily:'inherit',fontSize:10,fontWeight:600,letterSpacing:'0.04em',
-              padding:'2px 7px',borderRadius:4,lineHeight:1,
-              border:'1px solid var(--border)',
-              background:idx!==nowIdx?'var(--background)':'transparent',
-              color:idx!==nowIdx?'var(--foreground)':'var(--muted-foreground)',
-              borderColor:idx!==nowIdx?'var(--border)':'transparent',
-              cursor:idx!==nowIdx?'pointer':'default',
-            }}>NOW</button>
+            <button type="button"
+              onClick={()=>idx!==nowIdx&&onChange(nowIdx)}
+              aria-label="Jump to current time"
+              aria-disabled={idx===nowIdx}
+              style={{
+                fontFamily:'inherit',fontSize:10,fontWeight:600,letterSpacing:'0.04em',
+                padding:'6px 10px',borderRadius:4,lineHeight:1,
+                border:'1px solid var(--border)',
+                background:idx!==nowIdx?'var(--background)':'transparent',
+                color:idx!==nowIdx?'var(--foreground)':'var(--muted-foreground)',
+                borderColor:idx!==nowIdx?'var(--border)':'transparent',
+                cursor:idx!==nowIdx?'pointer':'default',
+                minHeight:28,
+              }}>NOW</button>
             <span className="muted">·</span>
             <span>{hourly[idx].t.toUpperCase()}</span>
           </div>
         </div>
         <svg ref={svgRef} width="100%" viewBox={`0 0 ${W} ${H}`}
+          role="slider"
+          tabIndex={0}
+          aria-label="Hour selector"
+          aria-valuemin={0}
+          aria-valuemax={hourly.length - 1}
+          aria-valuenow={idx}
+          aria-valuetext={`${hourly[idx].t.toUpperCase()}, ${hourly[idx].waveFt.toFixed(1)} ft, rated ${hourly[idx].rating}`}
+          onKeyDown={e => {
+            if (e.key === 'ArrowRight' || e.key === 'ArrowUp') { e.preventDefault(); onChange(Math.min(idx + 1, hourly.length - 1)); }
+            if (e.key === 'ArrowLeft'  || e.key === 'ArrowDown') { e.preventDefault(); onChange(Math.max(idx - 1, 0)); }
+            if (e.key === 'Home') { e.preventDefault(); onChange(0); }
+            if (e.key === 'End')  { e.preventDefault(); onChange(hourly.length - 1); }
+          }}
           style={{display:'block',cursor:'ew-resize',touchAction:'none'}}
           onMouseDown={handleDown} onTouchStart={handleDown}>
           {[0,0.5,1].map((f,i)=>{const y=14+(H-44)*(1-f);return <line key={i} x1={0} y1={y} x2={W} y2={y} stroke="var(--border)" strokeDasharray="2 3" opacity="0.6"/>;  })}
@@ -553,7 +603,13 @@
             </div>
             <div className="mono" style={{fontSize:12,fontWeight:500}}>{s.heightFt} ft <span className="muted">@ {s.periodS}s</span></div>
           </div>
-          <div style={{height:5,background:'var(--muted)',borderRadius:999,overflow:'hidden'}}>
+          <div style={{height:5,background:'var(--muted)',borderRadius:999,overflow:'hidden'}}
+            role="meter"
+            aria-label={`${s.label} energy`}
+            aria-valuenow={s.energy}
+            aria-valuemin={0}
+            aria-valuemax={100}
+          >
             <div style={{width:`${s.energy}%`,height:'100%',background:'var(--foreground)',opacity:i===0?1:0.45}}/>
           </div>
         </div>
@@ -593,7 +649,10 @@
       return { x:fhr/23*(W-4)+2, y:yFor(ft) };
     });
     return (
-      <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} style={{marginTop:10,display:'block'}}>
+      <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`}
+        role="img"
+        aria-label="24-hour tide chart"
+        style={{marginTop:10,display:'block'}}>
         <path d={d+` L ${pts[pts.length-1].x.toFixed(1)} ${H} L ${pts[0].x.toFixed(1)} ${H} Z`} fill="var(--muted)" opacity="0.7"/>
         <path d={d} stroke="var(--foreground)" strokeWidth="1.4" fill="none"/>
         {dotPositions.map((p,i)=>(
@@ -650,11 +709,12 @@
       localStorage.setItem('surf-theme', dark ? 'dark' : 'light');
     }, [dark]);
 
+    const [isMockData, setIsMockData] = useState(false);
     const fetchData = () => {
       setRefreshing(true);
       loadSurfData()
-        .then(d  => { setData(d); setHourIdx(d.nowIdx); })
-        .catch(() => { setData(window.MOCK_DATA); setHourIdx(window.MOCK_DATA.nowIdx); })
+        .then(d  => { setData(d); setHourIdx(d.nowIdx); setIsMockData(false); })
+        .catch(() => { setData(window.MOCK_DATA); setHourIdx(window.MOCK_DATA.nowIdx); setIsMockData(true); })
         .finally(() => setRefreshing(false));
     };
 
@@ -679,8 +739,8 @@
 
     if (!data) return (
       <div className="surf-screen" style={{alignItems:'center',justifyContent:'center'}}>
-        <div style={{textAlign:'center',padding:40}}>
-          <div className="live-dot" style={{margin:'0 auto 12px'}}/>
+        <div role="status" style={{textAlign:'center',padding:40}}>
+          <div className="live-dot" aria-hidden="true" style={{margin:'0 auto 12px'}}/>
           <div className="eyebrow">Loading surf data</div>
           <div className="mono muted" style={{fontSize:10,marginTop:6}}>Fetching live conditions…</div>
         </div>
@@ -712,8 +772,16 @@
     return (
       <div className={`surf-screen${dark?' dark':''}`}>
 
+        <div
+          aria-live="polite"
+          aria-atomic="true"
+          style={{position:'absolute',width:1,height:1,overflow:'hidden',clip:'rect(0,0,0,0)',whiteSpace:'nowrap',border:0,padding:0,margin:0}}
+        >
+          {data && cur ? `${cur.t.toUpperCase()}: ${cur.waveFt.toFixed(1)} ft at ${cur.periodS} seconds, rated ${cur.rating}` : 'Loading surf data'}
+        </div>
+
         {/* Header */}
-        <div style={{padding:"4px 20px 10px",flexShrink:0,display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
+        <header style={{padding:"14px 20px 10px",flexShrink:0,display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
           <div>
             <div style={{display:'flex',alignItems:'center',gap:8}}>
               <div style={{fontSize:15,fontWeight:600,whiteSpace:'nowrap',lineHeight:1.1}}>Deep Hole</div>
@@ -723,16 +791,30 @@
             </div>
             <div className="mono muted" style={{fontSize:10,marginTop:3,whiteSpace:'nowrap'}}>{headerDate}</div>
           </div>
-          <button type="button" onClick={()=>setDark(d=>!d)} style={{
-            background:'transparent',border:'none',cursor:'pointer',
-            padding:6,borderRadius:6,color:'var(--muted-foreground)',
-            display:'flex',alignItems:'center',marginTop:2,
-          }}>
-            <LIcon name={dark?'sun':'moon'} size={16}/>
-          </button>
-        </div>
+          <div style={{display:'flex',alignItems:'center',gap:4,marginTop:2}}>
+            <button type="button" onClick={fetchData}
+              aria-label="Refresh surf conditions"
+              style={{
+                background:'transparent',border:'none',cursor:'pointer',
+                padding:6,borderRadius:6,color:'var(--muted-foreground)',
+                display:'flex',alignItems:'center',
+              }}>
+              <LIcon name="refresh-cw" size={16} ariaHidden={true}/>
+            </button>
+            <button type="button" onClick={()=>setDark(d=>!d)}
+              aria-label={dark?'Switch to light mode':'Switch to dark mode'}
+              aria-pressed={dark}
+              style={{
+                background:'transparent',border:'none',cursor:'pointer',
+                padding:6,borderRadius:6,color:'var(--muted-foreground)',
+                display:'flex',alignItems:'center',
+              }}>
+              <LIcon name={dark?'sun':'moon'} size={16} ariaHidden={true}/>
+            </button>
+          </div>
+        </header>
 
-        <div ref={scrollRef} className="surf-scroll" style={{padding:"0 20px 32px"}}
+        <main ref={scrollRef} className="surf-scroll" aria-label="Surf conditions" style={{padding:"0 20px 32px"}}
           onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
 
           {/* Pull-to-refresh indicator */}
@@ -747,6 +829,18 @@
             {(refreshing || pullY>=60) && <span className="mono muted" style={{fontSize:11,marginLeft:7}}>Refreshing...</span>}
           </div>
 
+          {isMockData && (
+            <div role="alert" style={{
+              background:'oklch(0.97 0.04 55)',border:'1px solid oklch(0.85 0.08 55)',
+              borderRadius:'var(--radius-md)',padding:'8px 12px',marginBottom:10,
+              fontSize:11,color:'oklch(0.35 0.08 55)',fontFamily:'var(--font-mono)',
+            }}>
+              Live data unavailable — showing example conditions
+            </div>
+          )}
+
+          {/* Hero + Scrubber */}
+          <section aria-label="Current conditions">
           {/* Hero */}
           <div style={{marginTop:4,marginBottom:14}}>
             <div style={{display:'flex',alignItems:'baseline',justifyContent:'space-between',marginBottom:6}}>
@@ -767,22 +861,24 @@
 
           {/* Scrubber */}
           <ScrubberTimeline hourly={hourly} idx={hourIdx} onChange={setHourIdx} nowIdx={nowIdx}/>
+          </section>
 
           {/* Wind + Swell tiles */}
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginTop:14}}>
             <ScrubTile label="Wind" value={`${cur.windMph}`} unit="mph"
               sub={`G ${cur.gustMph} · ${window.SurfUtil.compass(cur.windDirDeg)}`}>
-              <DirArrow deg={cur.windDirDeg} size={24}/>
+              <DirArrow deg={cur.windDirDeg} size={24} label={`Wind direction: ${window.SurfUtil.compass(cur.windDirDeg)}`}/>
             </ScrubTile>
             <ScrubTile label="Swell dir"
               value={window.SurfUtil.compass(cur.swellDirDeg||swells[0]?.dirDeg||0)}
               unit={`${cur.swellDirDeg||swells[0]?.dirDeg||0}°`}
               sub="Primary">
-              <DirArrow deg={cur.swellDirDeg||swells[0]?.dirDeg||0} size={24}/>
+              <DirArrow deg={cur.swellDirDeg||swells[0]?.dirDeg||0} size={24} label={`Swell direction: ${window.SurfUtil.compass(cur.swellDirDeg||swells[0]?.dirDeg||0)}`}/>
             </ScrubTile>
           </div>
 
           {/* Tide card */}
+          <section aria-label="Tide">
           <div className="card" style={{padding:14,marginTop:10}}>
             <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
               <div className="eyebrow">Tide · 24h</div>
@@ -797,18 +893,28 @@
               <LIcon name={isTideRising?"arrow-up-right":"arrow-down-right"} size={18}/>
             </div>
             <FullTideSpark hourlyTides={hourlyTides} tideEvents={tideEvents} nowHour={cur.hr}/>
-            <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:6,marginTop:8}}>
-              {tideEvents.slice(0,4).map(e=>(
-                <div key={e.time}>
-                  <div className="eyebrow" style={{fontSize:9}}>{e.label}</div>
-                  <div className="mono" style={{fontSize:11,fontWeight:500,marginTop:1}}>{e.time.replace(' AM','a').replace(' PM','p')}</div>
-                  <div className="mono muted" style={{fontSize:9}}>{e.heightFt} ft</div>
-                </div>
-              ))}
+            <div style={{position:'relative',height:40,marginTop:8}}>
+              {tideEvents.slice(0,4).map(e=>{
+                const [ts,ap]=e.time.split(' ');
+                const [h,m]=ts.split(':').map(Number);
+                const h24=(ap==='PM'&&h!==12)?h+12:(ap==='AM'&&h===12?0:h);
+                const fhr=Math.min(22.99,Math.max(0,h24+m/60));
+                const xPct=(fhr/23*316+2)/320*100;
+                const clampedPct=Math.min(92,Math.max(8,xPct));
+                return (
+                  <div key={e.time} style={{position:'absolute',left:`${clampedPct}%`,transform:'translateX(-50%)',textAlign:'center',whiteSpace:'nowrap'}}>
+                    <div className="eyebrow" style={{fontSize:9}}>{e.label}</div>
+                    <div className="mono" style={{fontSize:11,fontWeight:500,marginTop:1}}>{e.time.replace(' AM','a').replace(' PM','p')}</div>
+                    <div className="mono muted" style={{fontSize:9}}>{e.heightFt} ft</div>
+                  </div>
+                );
+              })}
             </div>
           </div>
+          </section>
 
           {/* Swell breakdown */}
+          <section aria-label="Swell">
           <div className="card" style={{padding:14,marginTop:10}}>
             <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}}>
               <div className="eyebrow">Swell components</div>
@@ -816,8 +922,10 @@
             </div>
             <SwellStack swells={swells}/>
           </div>
+          </section>
 
           {/* Environment */}
+          <section aria-label="Environment">
           <div className="card" style={{padding:14,marginTop:10}}>
             <div className="eyebrow" style={{marginBottom:10}}>Environment</div>
             <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:10}}>
@@ -827,8 +935,10 @@
               <EnvCell icon="sunset"          label="Set"   value={now.sunset.replace(' PM','p')}/>
             </div>
           </div>
+          </section>
 
           {/* 7-day */}
+          <section aria-label="5-day outlook">
           <div className="card" style={{padding:"8px 0",marginTop:10}}>
             <div style={{display:'flex',alignItems:'baseline',justifyContent:'space-between',padding:"6px 14px 6px"}}>
               <div className="eyebrow">5-day outlook</div>
@@ -853,8 +963,10 @@
               </div>
             ))}
           </div>
+          </section>
 
           {/* Buoys */}
+          <section aria-label="Offshore buoys">
           <div className="card" style={{padding:14,marginTop:10}}>
             <div className="eyebrow" style={{marginBottom:10}}>Offshore buoys</div>
             <div style={{display:'flex',flexDirection:'column',gap:10}}>
@@ -880,9 +992,10 @@
               ))}
             </div>
           </div>
+          </section>
 
           <div style={{height:8}}/>
-        </div>
+        </main>
       </div>
     );
   };
